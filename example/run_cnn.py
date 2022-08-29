@@ -1,14 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
 import os
-import sys
 from glob import glob
-import torch
 from xavier.nn.cnn import cnn
 from argparse import ArgumentParser
-
 
 def get_args():
     parser = ArgumentParser(description='Xavier')
@@ -33,8 +26,7 @@ if __name__ == "__main__":
     else:
         filenames = glob(os.path.join(path_to_directory, "*", ""))
 
-    result = cnn(filenames=filenames, name_type=name_type,
-                 show=show, times=1, output_layer=3)
+    result = cnn(filenames=filenames, name_type=name_type, show=show, times=1, output_layer=3)
 
     print("CNN:")
     print("->", result, "\n")

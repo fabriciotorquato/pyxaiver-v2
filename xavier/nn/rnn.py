@@ -1,18 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import math
 import os
-
 import torch
-
 from xavier.builder.model import Model
 from xavier.constants.type import Type
-
-print("PyTorch Version: ", torch.__version__)
-
 
 def rnn(filenames, name_type, show, type=Type.rnn, learning_rate=0.001, times=3, num_epoch=25, batch_size=8, input_layer=121, output_layer=3):
 

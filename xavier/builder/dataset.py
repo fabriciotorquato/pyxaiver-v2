@@ -1,14 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import csv
 import os
-
 import numpy as np
-import pandas
-from scipy import stats
 from tqdm import tqdm
-
 from xavier.core.classification import Classification
 from xavier.core.transformation import get_feature, get_frequency
 
@@ -54,8 +47,7 @@ class Dataset(object):
     def _create_dataset(self):
         array_data = self.classification.get_many_seconds()
 
-        print '{}:'.format(self.saveFolder.rpartition('/')
-                           [0].rpartition('/')[2])
+        print('{}:'.format(self.saveFolder.rpartition('/')[0].rpartition('/')[2]))
 
         labels = self._get_labels(
             self.randomList, self.imageList, self.classification.seconds)
@@ -73,7 +65,7 @@ class Dataset(object):
 
     def merge_files(self, save_folder, filenames):
 
-        print "Create Full Dataset:"
+        print("Create Full Dataset:")
 
         if not os.path.exists(save_folder):
             os.mkdir(save_folder)

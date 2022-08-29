@@ -2,15 +2,12 @@ import datetime
 import sys
 import os
 from argparse import ArgumentParser
-
-from xavier.constants.type import Type
-
 try:
-    from xavier.core.sub_data import Subcribe
+    from xavier.core.record import Record
 except:
     sys.path.insert(0, os.path.abspath(
         os.path.join(os.path.dirname(__file__), '..')))
-    from xavier.core.sub_data import Subcribe
+    from xavier.core.record import Record
 
 
 def get_args():
@@ -36,18 +33,19 @@ if __name__ == "__main__":
     train = args.train
     ip = args.ip
 
-    if type_nn == "mlp":
-        type_nn = Type.mlp
-    elif type_nn == "rnn":
-        type_nn = Type.rnn
-    elif type_nn == "cnn":
-        type_nn = Type.cnn
-
     try:
+        # Please fill your application clientId and clientSecret before running script
         your_app_client_id = ''
         your_app_client_secret = ''
-        s = Subcribe(your_app_client_id, your_app_client_secret, model, type_nn, train, ip)
-        streams = ['pow']
-        s.start(streams)
+
+        r = Record(your_app_client_id, your_app_client_secret)
+        r.record_title = 'values_%s.csv' % str(datetime.datetime.now()).replace(':', '-')
+        r.record_export_folder = "{}/{}".format(path,username)
+        r.record_export_data_types = ['BP']
+        r.record_export_format = 'CSV'
+        r.record_export_version = 'V2'
+
+        record_duration_s = 10  # duration for recording in this example. It is not input param of create_record
+        r.start(record_duration_s)
     except Exception as ex:
       print(ex)

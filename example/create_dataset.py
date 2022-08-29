@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
-import sys
 from glob import glob
 from argparse import ArgumentParser
 from xavier.builder.dataset import Dataset

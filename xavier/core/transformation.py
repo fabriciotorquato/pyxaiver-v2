@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import numpy as np
 from scipy.signal import butter, lfilter
 from sklearn.preprocessing import StandardScaler
@@ -31,7 +28,7 @@ def get_frequency(all_channel_data):
     return delta, theta, alpha, beta
 
 
-def get_feature(delta, theta, alpha, beta, isShowBandPower=True):
+def get_feature(delta, theta, alpha, beta):
 
     # Compute feature std
     delta_std = np.std(delta, axis=1)
@@ -45,9 +42,6 @@ def get_feature(delta, theta, alpha, beta, isShowBandPower=True):
     alpha_m = np.mean(alpha, axis=1)
     beta_m = np.mean(beta, axis=1)
 
-    if isShowBandPower:
-        print_wave(delta_std, theta_std, alpha_std, beta_std, "std")
-
     feature = np.array([delta_std, delta_m, theta_std,
                         theta_m, alpha_std, alpha_m, beta_std, beta_m])
 
@@ -57,16 +51,6 @@ def get_feature(delta, theta, alpha, beta, isShowBandPower=True):
     return feature
 
 
-def print_wave(delta, theta, alpha, beta, type, sensor_index=0):
-
-    print str(type) + "-delta-" + str(sensor_index) + \
-        ": " + str(delta[sensor_index])
-    print str(type) + "-theta-" + str(sensor_index) + \
-        ": " + str(theta[sensor_index])
-    print str(type) + "-alpha-" + str(sensor_index) + \
-        ": " + str(alpha[sensor_index])
-    print str(type) + "-beta-" + str(sensor_index) + \
-        ": " + str(beta[sensor_index])
 
 def butter_bandpass(lowcut, highcut, fs, order=5):
     nyq = 0.5 * fs

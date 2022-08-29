@@ -1,14 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
 import os
-import sys
 from glob import glob
-import torch
 from xavier.nn.mlp import mlp
 from argparse import ArgumentParser
-
 
 def get_args():
     parser = ArgumentParser(description='Xavier')

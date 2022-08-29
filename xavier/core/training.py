@@ -1,20 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import math
 import time
 from datetime import timedelta
-
 import matplotlib.pyplot as plt
 import numpy as np
 import scikitplot as skplt
 import torch
-import torch.nn.functional as F
 from sklearn import metrics
 from torch.autograd import Variable
-
 from xavier.constants.type import Type
 from xavier.core.transformation import get_standard
 from xavier.net.cnn import Cnn

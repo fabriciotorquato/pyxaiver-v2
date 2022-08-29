@@ -1,12 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
 import os
-import sys
 from glob import glob
 from argparse import ArgumentParser
-
 from xavier.nn.mlp import mlp
 from xavier.nn.rnn import rnn
 from xavier.nn.cnn import cnn

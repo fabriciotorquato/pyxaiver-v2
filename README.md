@@ -1,17 +1,6 @@
 # Pyxavier
 
-## Requirements
-
-- [Git](https://git-scm.com/downloads)
-- [Virtualvenv](https://virtualenv.pypa.io/en/latest/)
-
 ## Library
-
-### Python
-
-| Description        | Tech   | Resources                                |
-| ------------------ | ------ | ---------------------------------------- |
-| get raw data - EEG | Emokit | [API](https://github.com/openyou/emokit) |
 
 ### Setup project
 

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
 import time
 
@@ -45,7 +42,7 @@ class Model(object):
     def __train_model(self, train_loader, valid_loader, test_loader, train_size, valid_size, show, filename):
         self.model.first_time = time.time()
         for epoch in range(1, self.num_epoch+1):
-            print "Epoch " + str(epoch) + "/" + str(self.num_epoch)
+            print("Epoch " + str(epoch) + "/" + str(self.num_epoch))
             self.model.train(epoch, train_loader, train_size)    
             self.model.validation(valid_loader, valid_size)
         print('Data train: ')
@@ -133,7 +130,7 @@ class Model(object):
         self.file_accucary = np.zeros(len(self.filenames))
         for _ in range(times):
             for idx, file in enumerate(self.filenames):
-                print "\nTraining dataset: " + str(file) + "\n"
+                print("\nTraining dataset: " + str(file) + "\n")
 
                 dataset_x, dataset_y = self.get_dataset(file)
 

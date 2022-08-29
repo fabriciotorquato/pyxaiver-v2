@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import sys
-import csv
-import numpy as np
 import os
 from glob import glob
 from xavier.core.convert import saveImageClassification, saveDataList, get_time_classification, get_data_classification
@@ -21,5 +16,4 @@ if __name__ == "__main__":
         data_random = file+"data_random.txt"
 
         saveImageClassification(file, get_time_classification(classification))
-        saveDataList(file, get_data_classification(
-            classification, data_random))
+        saveDataList(file, get_data_classification(classification, data_random))

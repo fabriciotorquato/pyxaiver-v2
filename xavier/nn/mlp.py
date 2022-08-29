@@ -1,16 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
 import os
-
 import torch
-
 from xavier.builder.model import Model
 from xavier.constants.type import Type
-
-print("PyTorch Version: ", torch.__version__)
 
 
 def mlp(filenames, name_type, show, type=Type.mlp, learning_rate=0.001, times=3, num_epoch=20, batch_size=16, input_layer=112, hidden_layer=32, output_layer=3):
