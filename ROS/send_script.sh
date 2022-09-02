@@ -1,3 +1,5 @@
-# sshpass -p raspberry scp -r /home/grau/Documents/recognitionPi/raspberry/* pi@172.26.92.210:/home/pi/Documents
-sshpass -p raspberry ssh pi@172.26.92.210 'rm -rf /home/pi/ros/catkin_ws/src/sender'
-sshpass -p raspberry scp -r /home/lucasdutra/Desktop/TCC_Git/tcc-dtc-2019/ROS/sender/* pi@172.26.92.210:/home/pi/ros/catkin_ws/src/
+sshpass -p raspberry ssh jarvis@192.168.0.15 'rm -rf ~/ros/catkin_ws/src'
+sshpass -p raspberry scp -r ~/Documents/pyxavier-v2/ROS/sender/ jarvis@192.168.0.15:~/ros/catkin_ws/src/
+
+sshpass -p raspberry ssh pi@192.168.0.38 'rm -rf ~/ros/catkin_ws/src'
+sshpass -p raspberry scp -r ~/Documents/pyxavier-v2/ROS/sender/ pi@192.168.0.38:~/ros/catkin_ws/src/

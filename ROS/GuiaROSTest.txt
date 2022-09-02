@@ -6,7 +6,7 @@ TCC_GIT: /home/lucasdutra/Desktop/TCC_Git/tcc-dtc-2019/ROS/sender/turtlesim_clea
 raspberry:
 
 iniciar ros
-cd ros/catkin_ws
+cd ~/ros/catkin_ws
 source devel/setup.bash
 
 
@@ -19,9 +19,9 @@ rosrun turtlesim_cleaner picarROS.py
 
 pc:
 Iniciar ROS
-export ROS_MASTER_URI=http://172.26.92.210:11311
+export ROS_MASTER_URI=http://192.168.0.38:11311
 
-export ROS_IP=172.26.92.73
+export ROS_IP=192.168.0.15
 
 Escrever os comando para enviar
 rosrun turtlesim_cleaner keyCatchRSP.py 

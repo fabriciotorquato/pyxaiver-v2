@@ -1,7 +1,9 @@
 import csv
-import os
+from pathlib import Path
+
 import numpy as np
 from tqdm import tqdm
+
 from xavier.core.classification import Classification
 from xavier.core.transformation import get_feature, get_frequency
 
@@ -17,7 +19,7 @@ class Dataset(object):
         self.saveFolder = saveFolder
 
         self.classification = Classification(
-            self.file_csv,  self.classification, self.saveFolder)
+            self.file_csv, self.classification, self.saveFolder)
 
         self._create_dataset()
 
@@ -52,7 +54,7 @@ class Dataset(object):
         labels = self._get_labels(
             self.randomList, self.imageList, self.classification.seconds)
 
-        with open(self.saveFolder+'dataset.csv', 'w') as dataset_file:
+        with open(self.saveFolder + 'dataset.csv', 'w') as dataset_file:
             for index, data in enumerate(tqdm(array_data)):
                 if len(data) > 0:
                     data = map(list, zip(*data))
@@ -66,23 +68,21 @@ class Dataset(object):
     def merge_files(self, save_folder, filenames):
 
         print("Create Full Dataset:")
-
-        if not os.path.exists(save_folder):
-            os.mkdir(save_folder)
+        Path(save_folder).mkdir(parents=True, exist_ok=True)
 
         total = 0
         for sample in filenames:
             if sample.rpartition('/')[0].rpartition('/')[2] != 'full':
-                total += sum(1 for row in open(sample+'dataset.csv'))
+                total += sum(1 for row in open(sample + 'dataset.csv'))
 
         pbar = tqdm(total=total)
 
-        with open(save_folder+'dataset.csv', 'w') as file_out:
+        with open(save_folder + 'dataset.csv', 'w') as file_out:
             for sample in filenames:
                 if sample.rpartition('/')[0].rpartition('/')[2] != 'full':
                     wr = csv.writer(file_out)
 
-                    file_csv = open(sample+'dataset.csv')
+                    file_csv = open(sample + 'dataset.csv')
                     file_csv = csv.reader(file_csv)
                     file_csv = np.array([np.array(row) for row in file_csv])
 

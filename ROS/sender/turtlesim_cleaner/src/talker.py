@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 import rospy
-import requests
 from std_msgs.msg import String
-import numpy as np        
-import pandas as pd  
-import random
 import socket
 
 def talker():

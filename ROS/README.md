@@ -34,7 +34,7 @@
     rosrun turtlesim turtlesim_node
     
     open the third terminal and start the KNN
-    cd ros/catkin_ws
+    cd ~/ros/catkin_ws
     source devel/setup.bash
     rosrun turtlesim_cleaner knnTalker.py
     

@@ -20,7 +20,7 @@ def get_args():
     parser.add_argument('--path', type=str, default='')
     parser.add_argument('--username', type=str, default='')
     parser.add_argument('--train', type=bool, default=False)
-    parser.add_argument('--ip', type=str, default='127.0.0.1:8080')
+    parser.add_argument('--url', type=str, default='wss://localhost:6868')
     args = parser.parse_args()
     return args
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     path = args.path
     username = args.username
     train = args.train
-    ip = args.ip
+    url = args.url
 
     if type_nn == "mlp":
         type_nn = Type.mlp
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     try:
         your_app_client_id = ''
         your_app_client_secret = ''
-        s = Subcribe(your_app_client_id, your_app_client_secret, model, type_nn, train, ip)
+        s = Subcribe(your_app_client_id, your_app_client_secret, model, type_nn, train, url)
         streams = ['pow']
         s.start(streams)
     except Exception as ex:

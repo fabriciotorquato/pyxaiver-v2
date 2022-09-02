@@ -98,6 +98,6 @@ if __name__ == '__main__':
 		car_publisher = rospy.Publisher('command', String, queue_size=10)
 		decoy =  xavier_command.STOP
 		car_publisher.publish(decoy)
-                pass
+        pass
 
 

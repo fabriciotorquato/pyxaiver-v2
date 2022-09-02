@@ -1,21 +1,27 @@
-import socket
+import json
+import ssl
 from xavier.lib.cortex.cortex import Cortex
 from xavier.core.training import Training as ModelTraining
+import websocket
 
 class Subcribe:
-    def __init__(self, app_client_id, app_client_secret, path_model,type, isTrain=False, ip="", **kwargs):
+    def __init__(self, app_client_id, app_client_secret, path_model,type, isTrain=False, url="wss://localhost:6868", **kwargs):
         self.c = Cortex(app_client_id, app_client_secret, debug_mode=True, **kwargs)
         self.c.bind(create_session_done=self.on_create_session_done)
         self.c.bind(new_data_labels=self.on_new_data_labels)
         self.c.bind(new_dev_data=self.on_new_dev_data)
         self.c.bind(new_pow_data=self.on_new_pow_data)
         self.c.bind(inform_error=self.on_inform_error)
+
         self.type = type
-        self.path_model=path_model
+        self.path_model = path_model
         self.isTrain = isTrain
-        if ip:
-            self.ip, self.port = ip.split(":")
-            self.port = int(self.port)
+
+        if url:
+            self.ws = websocket.create_connection(url, sslopt={"cert_reqs": ssl.CERT_NONE})
+        else:
+            self.ws = None
+            
         if not self.isTrain:
             self.init_model()
 
@@ -63,12 +69,19 @@ class Subcribe:
 
             print('value: {}'.format(result))
 
-            if self.ip:
+            if self.ws:
                 try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect((self.ip, self.port))
-                    s.send(result)
-                    s.close()
+                    QUERY_RECORD_ID = 100
+                    query_predict_request = {
+                        "jsonrpc": "2.0",
+                        "method": "queryPredict",
+                        "params": {
+                            "predict": result,
+                        },
+                        "id": QUERY_RECORD_ID
+                    }
+                    self.ws.send(json.dumps(query_predict_request))
+                    result = self.ws.recv()
                 except Exception as ex:
                     print('{}'.format(ex))
 

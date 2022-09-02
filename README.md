@@ -4,7 +4,7 @@
 
 ### Setup project
 
-    ./setup.sh
+    pip install -r requirements.txt
 
 ### Run
 

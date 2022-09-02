@@ -1,12 +1,14 @@
 import math
 import time
 from datetime import timedelta
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scikitplot as skplt
 import torch
 from sklearn import metrics
 from torch.autograd import Variable
+
 from xavier.constants.type import Type
 from xavier.core.transformation import get_standard
 from xavier.net.cnn import Cnn
@@ -24,37 +26,38 @@ class Training:
         self.device = device
         self.since = time.time()
         self.first_time = 0
+        self.standard = None
 
-    def load_model(self, type, path_model):
-        self.type = type
+    def load_model(self, model_type, path_model):
+        self.model_type = model_type
 
-        if self.type == Type.mlp:
+        if self.model_type == Type.mlp:
             self.model = Mlp()
             checkpoint = torch.load(path_model, map_location='cpu')
             self.model.load_state_dict(checkpoint['model'])
             self.standard = checkpoint['standard']
             self.model.eval()
 
-        elif self.type == Type.rnn:
+        elif self.model_type == Type.rnn:
             self.model = Rnn()
             checkpoint = torch.load(path_model, map_location='cpu')
             self.model.load_state_dict(checkpoint['model'])
             self.standard = checkpoint['standard']
             self.model.eval()
 
-        elif self.type == Type.cnn:
+        elif self.model_type == Type.cnn:
             self.model = Cnn()
             checkpoint = torch.load(path_model, map_location='cpu')
             self.model.load_state_dict(checkpoint['model'])
             self.standard = checkpoint['standard']
             self.model.eval()
 
-    def train(self, epoch, train_loader, size):
+    def train(self, train_loader, size):
         self.since = time.time()
         self.model.train()
         test_loss = 0
-        for data, target in train_loader:
 
+        for data, target in train_loader:
             # Convert torch tensor to Variable
             data = Variable(data).to(self.device).float()
             target = Variable(target).to(self.device).long()
@@ -72,13 +75,12 @@ class Training:
         test_loss /= size
         self.loss_tra.append(test_loss)
 
-    def validation(self, valid_loader, size, train=False):
+    def validation(self, valid_loader, size, validation=True):
         self.model.eval()
         test_loss = 0
         correct = 0
         with torch.no_grad():
             for data, target in valid_loader:
-
                 # Convert torch tensor to Variable
                 data = Variable(data).to(self.device).float()
                 target = Variable(target).to(self.device).long()
@@ -91,14 +93,17 @@ class Training:
                 correct += (predicted == target).sum()
 
         test_loss /= size
-        if not train:
+        if validation:
             self.loss_val.append(test_loss)
+        else:
+            print('Data train:')
+        print('{} - loss: {:.4f} - acc: {}/{} ({:.0f}%)'.format(timedelta(seconds=time.time() - self.since),
+                                                                test_loss,
+                                                                correct,
+                                                                size,
+                                                                100. * correct / size))
 
-        time_elapsed = time.time() - self.since
-        print('{}/{} [===========] - {} - loss: {:.4f} - acc: {}/{} ({:.0f}%)\n'.format(size,
-                                                                                            size, timedelta(seconds=time_elapsed), test_loss, correct, size, 100. * correct / size))
-
-    def test(self, test_loader, show, filename):
+    def test(self, test_loader, filename):
         self.model.eval()
         test_loss = 0
         correct = 0
@@ -126,25 +131,21 @@ class Training:
         test_loss /= len(test_loader.dataset)
 
         time_elapsed = time.time() - self.first_time
-
-        print('Test - {} -  Average loss: {:.4f} - Accuracy: {}/{} ({:.0f}%)'.format(
+        print('Data Test:')
+        print('{} -  Average loss: {:.4f} - Accuracy: {}/{} ({:.0f}%)'.format(
             timedelta(seconds=time_elapsed),
             test_loss, correct, len(test_loader.dataset),
             100. * correct / len(test_loader.dataset)))
 
-        print('\nConfusion Matrix:')
-        print(metrics.confusion_matrix(y_true, y_pred))
-
         test_acc = metrics.accuracy_score(y_true, y_pred)
 
-        if show:
-            plt.figure(1)
-            epochs = np.arange(len(self.loss_tra))
-            plt.plot(epochs, self.loss_tra, epochs, self.loss_val)
-            plt.savefig('{} {:.2f}_curve.png'.format(filename, test_acc))
-            skplt.metrics.plot_confusion_matrix(y_true, y_pred, normalize=True)
-            # plt.show()
-            plt.savefig('{} {:.2f}_matriz.png'.format(filename, test_acc))
+        plt.figure(1)
+        epochs = np.arange(len(self.loss_tra))
+        plt.plot(epochs, self.loss_tra, epochs, self.loss_val)
+        plt.savefig('{} {:.2f}_curve.png'.format(filename, test_acc))
+
+        skplt.metrics.plot_confusion_matrix(y_true, y_pred, normalize=True)
+        plt.savefig('{} {:.2f}_matriz.png'.format(filename, test_acc))
 
         return np.float32(test_acc)
 
@@ -156,7 +157,7 @@ class Training:
         matriz_size = int(math.sqrt(input_layer))
         x_row = np.asarray(
             get_standard([feature], self.standard))[0]
-        arr = np.zeros(matriz_size*matriz_size - len(x_row))
+        arr = np.zeros(matriz_size * matriz_size - len(x_row))
         arr = np.append(x_row, arr, axis=0)
         data_standard = np.asarray(arr).reshape((matriz_size, matriz_size))
         return data_standard
@@ -166,23 +167,22 @@ class Training:
         matriz_size = int(math.sqrt(input_layer))
         x_row = np.asarray(
             get_standard([feature], self.standard))[0]
-        arr = np.zeros(matriz_size*matriz_size - len(x_row))
+        arr = np.zeros(matriz_size * matriz_size - len(x_row))
         arr = np.append(x_row, arr, axis=0)
         data_standard = np.asarray(arr).reshape((matriz_size, matriz_size))
         return data_standard
 
     def print_percentage(self, top_label, top_prob):
         for index in range(self.model.output_layer):
-            print('option-{}: {}'.format(chr(97+top_label[0][index].item()),
-                                         float(top_prob[0][index].item()) * 100))
+            print('option-{}: {}'.format(chr(97 + top_label[0][index].item()), float(top_prob[0][index].item()) * 100))
 
     def predict(self, feature):
         try:
-            if self.type == Type.mlp:
+            if self.model_type == Type.mlp:
                 data_standard = np.array([self.predict_mlp(feature)])
-            elif self.type == Type.rnn:
+            elif self.model_type == Type.rnn:
                 data_standard = np.array([self.predict_rnn(feature)])
-            elif self.type == Type.cnn:
+            elif self.model_type == Type.cnn:
                 if len(self.feature_cnn) > 2:
                     self.feature_cnn = self.feature_cnn[1:]
                     self.feature_cnn.append(self.predict_cnn(feature))
@@ -190,17 +190,16 @@ class Training:
                 else:
                     self.feature_cnn.append(self.predict_cnn(feature))
                     return int(self.model.output_layer)
+            else:
+                return
 
             self.model.zero_grad()
-
             data_standard = torch.LongTensor(data_standard)
-
             data_standard = Variable(data_standard).float()
             output = self.model(data_standard)
             top_prob, top_label = torch.topk(output, self.model.output_layer)
-
             self.print_percentage(top_label, top_prob)
 
-            return str(top_label[0][0].item())
+            return top_label[0][0].item()
         except Exception as ex:
             print('{}'.format(ex))

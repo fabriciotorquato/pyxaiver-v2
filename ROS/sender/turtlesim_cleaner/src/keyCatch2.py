@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 import rospy
-import requests
 from std_msgs.msg import String
-import random
-from geometry_msgs.msg import Twist
-import os
-import datetime
+
 
 def talker():
     initi = True

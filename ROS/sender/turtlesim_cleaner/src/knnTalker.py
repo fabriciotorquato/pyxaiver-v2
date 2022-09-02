@@ -2,23 +2,20 @@
 import rospy
 import requests
 from std_msgs.msg import String
-import numpy as np        
-import pandas as pd  
-import random
-import socket
-import time
 
 def talker():
-    val = random.randint(0,2)
+    apiUrl = "http://192.168.0.20:8080/xavier"
     pub = rospy.Publisher('chatter', String, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(10)   
+    rate = rospy.Rate(1) # 1hz
     while not rospy.is_shutdown():
-        pub.publish(str(val))
-	if random.randint(0,101)<=20:
-		val = random.randint(0,2)
-        time.sleep(0.250)
-	
+        response = requests.get(apiUrl)
+        data = response.json()
+        hello_str = data["state"]
+        rospy.loginfo(hello_str)
+        pub.publish(hello_str)
+        rate.sleep()
+
 if __name__ == '__main__':
     try:
         talker()
