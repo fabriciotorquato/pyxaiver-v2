@@ -1,5 +1,4 @@
 import os
-import time
 from pathlib import Path
 
 import numpy as np
@@ -9,8 +8,9 @@ from sklearn.model_selection import train_test_split
 from torch import nn
 
 import xavier.constants.config as config
+from xavier.builder.early_stopping import EarlyStopping
 from xavier.constants.type import Type
-from xavier.core.dataLoader import DataLoader
+from xavier.core.data_loader import DataLoader
 from xavier.core.dataset import Dataset
 from xavier.core.training import Training
 from xavier.core.transformation import get_standard, init_standard
@@ -51,12 +51,17 @@ class Model(object):
         Path(self.filename_model).mkdir(parents=True, exist_ok=True)
 
     def __train_model(self, train_loader, valid_loader, test_loader, train_size, valid_size, filename):
-        self.model.first_time = time.time()
+        early_stopping = EarlyStopping(tolerance=5, min_delta=10)
         for epoch in range(self.num_epoch):
             print("Epoch {}/{}".format(epoch + 1, self.num_epoch + 1))
-            self.model.train(train_loader, train_size)
-            self.model.validation(valid_loader, valid_size)
+            epoch_train_loss = self.model.train(train_loader, train_size)
+            epoch_validate_loss = self.model.validation(valid_loader, valid_size)
+            early_stopping(epoch_train_loss, epoch_validate_loss)
+            if early_stopping.early_stop:
+                break
+        print('Data train:')
         self.model.validation(train_loader, train_size, validation=False)
+        print('Data Test:')
         return self.model.test(test_loader, filename)
 
     def __build_model(self):
@@ -70,7 +75,6 @@ class Model(object):
         else:
             return None
 
-        # choose optimizer and loss function
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=self.learning_rate)
         model = model.to(self.device)
@@ -128,9 +132,7 @@ class Model(object):
             dataset_x, dataset_y = self.get_dataset()
             x_train, x_test, y_train, y_test = train_test_split(dataset_x, dataset_y, test_size=0.2, random_state=21)
             x_train, x_test, standard = self.get_normalization(x_train, x_test)
-            train_loader, valid_loader, test_loader, train_size, valid_size = self.get_loader(x_train,
-                                                                                              y_train,
-                                                                                              x_test,
+            train_loader, valid_loader, test_loader, train_size, valid_size = self.get_loader(x_train, y_train, x_test,
                                                                                               y_test)
 
             self.input_layer = x_train.shape[1]

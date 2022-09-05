@@ -1,6 +1,5 @@
-import datetime
-import sys
 import os
+import sys
 from argparse import ArgumentParser
 
 from xavier.constants.type import Type
@@ -25,29 +24,28 @@ def get_args():
     return args
 
 
-
 if __name__ == "__main__":
     args = get_args()
 
     model = args.model
-    type_nn = args.type_nn
+    model_type = args.type_nn
     path = args.path
     username = args.username
     train = args.train
     url = args.url
 
-    if type_nn == "mlp":
-        type_nn = Type.mlp
-    elif type_nn == "rnn":
-        type_nn = Type.rnn
-    elif type_nn == "cnn":
-        type_nn = Type.cnn
+    if model_type == "mlp":
+        model_type = Type.mlp
+    elif model_type == "rnn":
+        model_type = Type.rnn
+    elif model_type == "cnn":
+        model_type = Type.cnn
 
     try:
         your_app_client_id = ''
         your_app_client_secret = ''
-        s = Subcribe(your_app_client_id, your_app_client_secret, model, type_nn, train, url)
+        s = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, train, url)
         streams = ['pow']
         s.start(streams)
     except Exception as ex:
-      print(ex)
+        print(ex)

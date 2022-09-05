@@ -1,12 +1,14 @@
 import csv
+
 import numpy as np
+
 import xavier.constants.eeg as eeg
 
 
 class Classification(object):
 
-    def __init__(self,  file_csv,  classification, saveFolder):
-        self.saveFolder = saveFolder
+    def __init__(self, file_csv, classification, save_folder):
+        self.saveFolder = save_folder
         self.seconds = 0
         self.raw_data = self.csv_modification(file_csv)
         self.time_raw_data = self.get_time_raw_data(file_csv)
@@ -30,8 +32,7 @@ class Classification(object):
         with open(path) as file_csv:
             data_csv = csv.reader(file_csv)
             next(data_csv, None)
-            data_csv = [np.delete(row, eeg.SENSOR_INDEX, axis=0).astype(
-                np.float64) for row in data_csv]
+            data_csv = [np.delete(row, eeg.SENSOR_INDEX, axis=0).astype(np.float64) for row in data_csv]
             data_csv = np.asarray(data_csv)
         return data_csv
 
@@ -45,7 +46,8 @@ class Classification(object):
         array_index = []
         index_timestamps = 0
         for index_raw_data, value in enumerate(raw_data):
-            if value.find(timestamps[index_timestamps].split(" ", 1)[1]) != -1 or timestamps[index_timestamps].split(" ", 1)[1] < value:
+            if value.find(timestamps[index_timestamps].split(" ", 1)[1]) != -1 or \
+                    timestamps[index_timestamps].split(" ", 1)[1] < value:
                 array_index.append(index_raw_data)
                 index_timestamps = index_timestamps + 1
                 if index_timestamps == len(timestamps):
@@ -56,9 +58,10 @@ class Classification(object):
         feature = []
         for index in self.array_index:
             step_index = 0
-            while eeg.SAMPLING_RATE+eeg.WINDOW_SIZE*step_index < eeg.SECONDS_RECORD*eeg.SAMPLING_RATE:
+            while eeg.SAMPLING_RATE + eeg.WINDOW_SIZE * step_index < eeg.SECONDS_RECORD * eeg.SAMPLING_RATE:
                 feature.append(
-                    self.raw_data[index+step_index*eeg.WINDOW_SIZE:index + eeg.SAMPLING_RATE+step_index*eeg.WINDOW_SIZE])
+                    self.raw_data[
+                    index + step_index * eeg.WINDOW_SIZE:index + eeg.SAMPLING_RATE + step_index * eeg.WINDOW_SIZE])
                 step_index += 1
             self.seconds = step_index
         return feature

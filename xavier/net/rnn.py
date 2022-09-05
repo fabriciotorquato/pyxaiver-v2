@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 
@@ -11,13 +10,10 @@ class Rnn(nn.Module):
         self.num_layers = 2
         self.output_layer = 3
         self.device = device
-        self.lstm = nn.LSTM(self.input_size, self.hidden_size,
-                            self.num_layers, batch_first=True).to(self.device)
-        self.fc = nn.Linear(
-            self.hidden_size, self.output_layer).to(self.device)
+        self.lstm = nn.LSTM(self.input_size, self.hidden_size, self.num_layers, batch_first=True).to(self.device)
+        self.fc = nn.Linear(self.hidden_size, self.output_layer).to(self.device)
 
     def forward(self, x):
-
         # Forward propagate LSTM
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         x, _ = self.lstm(x)

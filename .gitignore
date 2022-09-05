@@ -8,5 +8,5 @@
 libs/*
 venv/*
 
-models/*.png
+models/
 dataset/

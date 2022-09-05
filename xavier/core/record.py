@@ -1,5 +1,7 @@
-from xavier.lib.cortex.cortex import Cortex
 import time
+
+from xavier.lib.cortex.cortex import Cortex
+
 
 class Record():
     def __init__(self, app_client_id, app_client_secret, **kwargs):
@@ -11,7 +13,7 @@ class Record():
         self.c.bind(export_record_done=self.on_export_record_done)
         self.c.bind(inform_error=self.on_inform_error)
 
-    def start(self, record_duration_s=20, headsetId=''):
+    def start(self, record_duration_s=20, headset_id=''):
         """
         To start data recording and exporting process as below
         (1) check access right -> authorize -> connect headset->create session
@@ -21,7 +23,7 @@ class Record():
         record_duration_s: int, optional
             duration of record. default is 20 seconds
 
-        headsetId: string , optional
+        headset_id: string , optional
              id of wanted headet which you want to work with it.
              If the headsetId is empty, the first headset in list will be set as wanted headset
         Returns
@@ -30,8 +32,8 @@ class Record():
         """
         self.record_duration_s = record_duration_s
 
-        if headsetId != '':
-            self.c.set_wanted_headset(headsetId)
+        if headset_id != '':
+            self.c.set_wanted_headset(headset_id)
 
         self.c.open()
 
@@ -57,9 +59,7 @@ class Record():
     def stop_record(self):
         self.c.stop_record()
 
-
-    def export_record(self, folder, stream_types, format, record_ids,
-                      version, **kwargs):
+    def export_record(self, folder, stream_types, format, record_ids, version, **kwargs):
         """
         To export records
         Parameters
@@ -77,7 +77,7 @@ class Record():
         while length < record_duration_s:
             print('recording at {0} s'.format(length))
             time.sleep(1)
-            length+=1
+            length += 1
         print('end recording -------------------------')
 
     # callbacks functions
@@ -88,12 +88,13 @@ class Record():
         self.create_record(self.record_title, description=self.record_description)
 
     def on_create_record_done(self, *args, **kwargs):
-        
+
         data = kwargs.get('data')
         self.record_id = data['uuid']
         start_time = data['startDatetime']
         title = data['title']
-        print('on_create_record_done: recordId: {0}, title: {1}, startTime: {2}'.format(self.record_id, title, start_time))
+        print('on_create_record_done: recordId: {0}, title: {1}, startTime: {2}'.format(self.record_id, title,
+                                                                                        start_time))
 
         # record duration is record_length_s
         self.wait(self.record_duration_s)
@@ -102,13 +103,15 @@ class Record():
         self.stop_record()
 
     def on_stop_record_done(self, *args, **kwargs):
-        
+
         data = kwargs.get('data')
         record_id = data['uuid']
         start_time = data['startDatetime']
         end_time = data['endDatetime']
         title = data['title']
-        print('on_stop_record_done: recordId: {0}, title: {1}, startTime: {2}, endTime: {3}'.format(record_id, title, start_time, end_time))
+        print('on_stop_record_done: recordId: {0}, title: {1}, startTime: {2}, endTime: {3}'.format(record_id, title,
+                                                                                                    start_time,
+                                                                                                    end_time))
 
         # disconnect headset to export record
         print('on_stop_record_done: Disconnect the headset to export record')
@@ -119,7 +122,7 @@ class Record():
         # cortex has closed session. Wait some seconds before exporting record
         time.sleep(3)
 
-        #export record
+        # export record
         self.export_record(self.record_export_folder, self.record_export_data_types,
                            self.record_export_format, [self.record_id], self.record_export_version)
 
@@ -148,5 +151,3 @@ class Record():
 #   - in that file will has data you specified like : eeg, motion, performance metric and band power
 # 
 # -----------------------------------------------------------
-
-

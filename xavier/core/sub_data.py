@@ -1,42 +1,42 @@
 import json
 import ssl
-from xavier.lib.cortex.cortex import Cortex
-from xavier.core.training import Training as ModelTraining
+
 import websocket
 
+from xavier.core.training import Training as ModelTraining
+from xavier.lib.cortex.cortex import Cortex
+
+
 class Subcribe:
-    def __init__(self, app_client_id, app_client_secret, path_model,type, isTrain=False, url="wss://localhost:6868", **kwargs):
-        self.c = Cortex(app_client_id, app_client_secret, debug_mode=True, **kwargs)
+    def __init__(self, client_id, client_secret, path_model, model_type, is_train=False, url="wss://localhost:6868"):
+        self.c = Cortex(client_id, client_secret, debug_mode=True)
         self.c.bind(create_session_done=self.on_create_session_done)
         self.c.bind(new_data_labels=self.on_new_data_labels)
         self.c.bind(new_dev_data=self.on_new_dev_data)
         self.c.bind(new_pow_data=self.on_new_pow_data)
         self.c.bind(inform_error=self.on_inform_error)
 
-        self.type = type
+        self.model_type = model_type
         self.path_model = path_model
-        self.isTrain = isTrain
+        self.is_train = is_train
 
-        if url:
-            self.ws = websocket.create_connection(url, sslopt={"cert_reqs": ssl.CERT_NONE})
-        else:
-            self.ws = None
-            
-        if not self.isTrain:
+        self.ws = websocket.create_connection(url, sslopt={"cert_reqs": ssl.CERT_NONE}) if url else None
+
+        if not self.is_train:
             self.init_model()
 
     def init_model(self):
         try:
             self.model_training = ModelTraining()
-            self.model_training.load_model(self.type, self.path_model)
+            self.model_training.load_model(self.model_type, self.path_model)
         except Exception as ex:
             print('{}'.format(ex))
 
-    def start(self, streams, headsetId=''):
+    def start(self, streams, headset_id=''):
         self.streams = streams
 
-        if headsetId != '':
-            self.c.set_wanted_headset(headsetId)
+        if headset_id != '':
+            self.c.set_wanted_headset(headset_id)
 
         self.c.open()
 
@@ -52,7 +52,6 @@ class Subcribe:
         stream_labels = data['labels']
         print('{} labels are : {}'.format(stream_name, stream_labels))
 
-
     def on_new_dev_data(self, *args, **kwargs):
         data = kwargs.get('data')
         print('dev data: {}'.format(data))
@@ -61,10 +60,9 @@ class Subcribe:
         data = kwargs.get('data')
         print('pow data: {}'.format(data))
 
-
-        if not self.isTrain:
-            feature=data['pow']
-            #feature = get_feature(delta, theta, alpha, beta)
+        if not self.is_train:
+            feature = data['pow']
+            # feature = get_feature(delta, theta, alpha, beta)
             result = self.model_training.predict(feature)
 
             print('value: {}'.format(result))
@@ -92,4 +90,3 @@ class Subcribe:
     def on_inform_error(self, *args, **kwargs):
         error_data = kwargs.get('error_data')
         print(error_data)
-

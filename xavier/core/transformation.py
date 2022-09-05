@@ -9,7 +9,6 @@ def fast_fourier_transform(all_channel_data):
 
 
 def get_frequency(all_channel_data):
-
     # Length data channel
     L = len(all_channel_data[0])
     # Sampling frequency
@@ -29,7 +28,6 @@ def get_frequency(all_channel_data):
 
 
 def get_feature(delta, theta, alpha, beta):
-
     # Compute feature std
     delta_std = np.std(delta, axis=1)
     theta_std = np.std(theta, axis=1)
@@ -42,14 +40,12 @@ def get_feature(delta, theta, alpha, beta):
     alpha_m = np.mean(alpha, axis=1)
     beta_m = np.mean(beta, axis=1)
 
-    feature = np.array([delta_std, delta_m, theta_std,
-                        theta_m, alpha_std, alpha_m, beta_std, beta_m])
+    feature = np.array([delta_std, delta_m, theta_std, theta_m, alpha_std, alpha_m, beta_std, beta_m])
 
     feature = feature.T
     feature = feature.ravel()
 
     return feature
-
 
 
 def butter_bandpass(lowcut, highcut, fs, order=5):

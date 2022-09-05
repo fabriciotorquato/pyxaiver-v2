@@ -1,6 +1,4 @@
 import math
-import time
-from datetime import timedelta
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,6 +13,9 @@ from xavier.net.cnn import Cnn
 from xavier.net.mlp import Mlp
 from xavier.net.rnn import Rnn
 
+# Turn interactive plotting off
+plt.ioff()
+
 
 class Training:
 
@@ -24,8 +25,6 @@ class Training:
         self.optimizer = optimizer
         self.loss_tra, self.loss_val, self.feature_cnn = [], [], []
         self.device = device
-        self.since = time.time()
-        self.first_time = 0
         self.standard = None
 
     def load_model(self, model_type, path_model):
@@ -53,39 +52,35 @@ class Training:
             self.model.eval()
 
     def train(self, train_loader, size):
-        self.since = time.time()
         self.model.train()
         test_loss = 0
 
         for data, target in train_loader:
-            # Convert torch tensor to Variable
             data = Variable(data).to(self.device).float()
             target = Variable(target).to(self.device).long()
 
-            # Forward + Backward + Optimize
-            self.optimizer.zero_grad()  # zero the gradient buffer
+            self.optimizer.zero_grad()
             output = self.model(data).to(self.device)
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
-
-            # Save results
             test_loss += loss.item()
 
         test_loss /= size
         self.loss_tra.append(test_loss)
+        return test_loss
 
     def validation(self, valid_loader, size, validation=True):
         self.model.eval()
         test_loss = 0
+        counter = 0
         correct = 0
         with torch.no_grad():
             for data, target in valid_loader:
-                # Convert torch tensor to Variable
+                counter += 1
                 data = Variable(data).to(self.device).float()
                 target = Variable(target).to(self.device).long()
 
-                # Validation
                 output = self.model(data).to(self.device)
                 test_loss += self.criterion(output, target).item()
 
@@ -93,15 +88,12 @@ class Training:
                 correct += (predicted == target).sum()
 
         test_loss /= size
+
         if validation:
             self.loss_val.append(test_loss)
-        else:
-            print('Data train:')
-        print('{} - loss: {:.4f} - acc: {}/{} ({:.0f}%)'.format(timedelta(seconds=time.time() - self.since),
-                                                                test_loss,
-                                                                correct,
-                                                                size,
-                                                                100. * correct / size))
+
+        print('loss: {:.4f} - acc: {:.2f}'.format(test_loss, correct / size))
+        return test_loss
 
     def test(self, test_loader, filename):
         self.model.eval()
@@ -111,11 +103,9 @@ class Training:
         with torch.no_grad():
             for data, target in test_loader:
 
-                # Convert torch tensor to Variable
                 data = Variable(data).to(self.device).float()
                 target = Variable(target).to(self.device).long()
 
-                # Test
                 output = self.model(data).to(self.device)
                 test_loss += self.criterion(output, target).item()
                 _, predicted = torch.max(output, 1)
@@ -130,19 +120,15 @@ class Training:
 
         test_loss /= len(test_loader.dataset)
 
-        time_elapsed = time.time() - self.first_time
-        print('Data Test:')
-        print('{} -  Average loss: {:.4f} - Accuracy: {}/{} ({:.0f}%)'.format(
-            timedelta(seconds=time_elapsed),
-            test_loss, correct, len(test_loader.dataset),
-            100. * correct / len(test_loader.dataset)))
+        print('loss: {:.4f} - acc: {:.2f}'.format(test_loss, correct / len(test_loader.dataset)))
 
         test_acc = metrics.accuracy_score(y_true, y_pred)
 
-        plt.figure(1)
+        fig = plt.figure()
         epochs = np.arange(len(self.loss_tra))
         plt.plot(epochs, self.loss_tra, epochs, self.loss_val)
         plt.savefig('{} {:.2f}_curve.png'.format(filename, test_acc))
+        plt.close(fig)
 
         skplt.metrics.plot_confusion_matrix(y_true, y_pred, normalize=True)
         plt.savefig('{} {:.2f}_matriz.png'.format(filename, test_acc))
