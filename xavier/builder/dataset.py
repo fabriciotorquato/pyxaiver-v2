@@ -2,10 +2,9 @@ import csv
 from pathlib import Path
 
 import numpy as np
-from tqdm import tqdm
 
+from xavier.constants import eeg
 from xavier.core.classification import Classification
-from xavier.core.transformation import get_feature, get_frequency
 
 
 class Dataset(object):
@@ -18,63 +17,52 @@ class Dataset(object):
         self.image_list = image_list
         self.save_folder = save_folder
 
-        self.classification = Classification(
-            self.file_csv, self.classification, self.save_folder)
-
+        self.classification = Classification(self.file_csv, self.classification, self.save_folder)
         self._create_dataset()
 
-    def _get_labels(self, random_list, image_list, seconds):
-        with open(random_list) as file_csv:
-
+    def _get_labels(self):
+        with open(self.random_list) as file_csv:
             data_csv_random_list = csv.reader(file_csv)
-            data_csv_random_list = np.array(
-                [np.array(row) for row in data_csv_random_list])
+            data_csv_random_list = np.array([np.array(row) for row in data_csv_random_list])
 
-        with open(image_list) as file_csv:
-
+        with open(self.image_list) as file_csv:
             data_csv_image_list = csv.reader(file_csv)
-            data_csv_image_list = np.array(
-                [np.array(row) for row in data_csv_image_list])
+            data_csv_image_list = np.array([np.array(row) for row in data_csv_image_list])
             data_csv_image_list = data_csv_image_list.T
             labels = []
 
             for row in data_csv_random_list:
                 value = row[0].split(" ", 1)[1]
                 index = data_csv_image_list[1].tolist().index(value)
-                for _ in range(seconds):
-                    labels.append(data_csv_image_list[0][index])
+                labels.append(data_csv_image_list[0][index])
 
             return labels
 
     def _create_dataset(self):
         array_data = self.classification.get_many_seconds()
-
-        print('{}:'.format(self.save_folder.rpartition('/')[0].rpartition('/')[2]))
-
-        labels = self._get_labels(
-            self.random_list, self.image_list, self.classification.seconds)
-
+        labels = self._get_labels()
         with open(self.save_folder + 'dataset.csv', 'w') as dataset_file:
-            for index, data in enumerate(tqdm(array_data)):
-                if len(data) > 0:
-                    data = map(list, zip(*data))
-                    (delta, theta, alpha, beta) = get_frequency(data)
-                    wave_data = get_feature(delta, theta, alpha, beta)
-                    wr = csv.writer(dataset_file)
-                    wave_data_with_label = np.insert(wave_data, 0, labels[index])
-                    wr.writerow(wave_data_with_label)
+            wr = csv.writer(dataset_file)
+            for index, label in enumerate(labels):
+                for data in array_data[index * eeg.SECONDS_RECORD:index * eeg.SECONDS_RECORD + eeg.SECONDS_RECORD]:
+                    if len(data) > 0:
+                        # data = map(list, zip(*data))
+                        data = data[0]
+                        # (delta, theta, alpha, beta) = get_frequency(data)
+                        # Theta,Alpha,BetaL,BetaH,Gamma
+                        # wave_data = get_feature(delta, theta, alpha, beta)
+                        wave_data_with_label = np.insert(data, 0, labels[index])
+                        wr.writerow(wave_data_with_label)
 
     def merge_files(self, save_folder, filenames):
 
-        print("Create Full Dataset:")
-        Path(save_folder).mkdir(parents=True, exist_ok=True)
+        Path(save_folder + '_full/').mkdir(parents=True, exist_ok=True)
 
         total = 0
         for sample in filenames:
             if sample.rpartition('/')[0].rpartition('/')[2] != 'full':
                 total += sum(1 for row in open('{}dataset.csv'.format(sample)))
-
-        with open('{}dataset.csv'.format(save_folder), 'w') as file_out:
+        with open('{}{}.csv'.format(save_folder + '_full/', save_folder.split('/')[-1]), 'w') as file_out:
             for sample in filenames:
                 if sample.rpartition('/')[0].rpartition('/')[2] != 'full':
                     wr = csv.writer(file_out)
@@ -85,3 +73,5 @@ class Dataset(object):
 
                     for line in file_csv:
                         wr.writerow(line)
+                        
+        print("Create Full Dataset")

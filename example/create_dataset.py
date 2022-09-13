@@ -1,13 +1,13 @@
 import os
-from glob import glob
 from argparse import ArgumentParser
+from glob import glob
+
 from xavier.builder.dataset import Dataset
 
 
 def get_args():
     parser = ArgumentParser(description='Xavier')
-    parser.add_argument('--dir', type=str, default='bci')
-    parser.add_argument('--full', type=bool, default=True)
+    parser.add_argument('--path', type=str, default='')
     args = parser.parse_args()
     return args
 
@@ -15,15 +15,14 @@ def get_args():
 if __name__ == "__main__":
 
     args = get_args()
+    path = args.path
 
-    name_type = args.dir
-    full = args.full
-
-    path_to_directory = 'dataset/{}/'.format(name_type)
-    filenames = glob(os.path.join(path_to_directory, "*", ""))
+    filenames = glob(os.path.join(path, "*", ""))
     dataset = None
 
+    print(filenames)
     for idx, file in enumerate(filenames):
+        print(file)
         if file.rpartition('/')[0].rpartition('/')[2] != 'full':
             values = '{}values.csv'.format(file)
             random = '{}data_random.txt'.format(file)
@@ -31,5 +30,5 @@ if __name__ == "__main__":
             dataList = '{}dataList.csv'.format(file)
             dataset = Dataset(values, classification, random, dataList, file)
 
-    if dataset is not None and full:
-        dataset.merge_files(path_to_directory + 'full/', filenames)
+    if dataset is not None:
+        dataset.merge_files(path, filenames)

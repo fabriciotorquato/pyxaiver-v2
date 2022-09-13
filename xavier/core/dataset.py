@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import torch
 import torch.utils.data
@@ -6,7 +8,8 @@ from xavier.constants.type import Type
 
 
 class Dataset(torch.utils.data.Dataset):
-    def __init__(self, x, y, model_type=Type.mlp, matriz_size=0):
+    def __init__(self, x, y, model_type=Type.mlp, input_layer=0):
+        matriz_size = int(math.sqrt(input_layer))
 
         temp_x = []
 
@@ -18,7 +21,7 @@ class Dataset(torch.utils.data.Dataset):
                 arr = arr.reshape((matriz_size, matriz_size))
                 temp_x.append(np.asarray(arr))
 
-                if (index > 3):
+                if index > 3:
                     temp = []
                     temp.append(temp_x[index - 2])
                     temp.append(temp_x[index - 1])
@@ -38,9 +41,6 @@ class Dataset(torch.utils.data.Dataset):
                 arr = arr.reshape((matriz_size, matriz_size))
                 temp_x.append(np.asarray(arr))
             self.data = torch.from_numpy(np.asarray(temp_x))
-
-        elif model_type == Type.mlp:
-            self.data = torch.from_numpy(x)
 
         self.labels = torch.from_numpy(y)
 

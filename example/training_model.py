@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 
-from xavier.nn.cnn import cnn
-from xavier.nn.mlp import mlp
-from xavier.nn.rnn import rnn
+from xavier.builder.model import Model
+from xavier.net.cnn import Cnn
+from xavier.net.rnn import Rnn
 
 
 def get_args():
@@ -13,19 +13,29 @@ def get_args():
     return args
 
 
-def start_train(filename, name_type):
+def start_train(filename):
     results = []
 
-    results.append(mlp(filename=filename, name_type=name_type, times=1, output_layer=3))
-    results.append(rnn(filename=filename, name_type=name_type, times=1, output_layer=3))
-    results.append(cnn(filename=filename, name_type=name_type, times=1, output_layer=3))
+    model = Model(filename=filename,
+                  learning_rate=0.001,
+                  num_epoch=5,
+                  batch_size=8,
+                  model_cls=Rnn)
+    model.create_model(times=1)
+    results.append(model.file_accucary)
+
+    model = Model(filename=filename,
+                  learning_rate=0.0004,
+                  num_epoch=5,
+                  batch_size=128,
+                  model_cls=Cnn)
+    model.create_model(times=1)
+    results.append(model.file_accucary)
 
     for idx, result in enumerate(results):
         if idx == 0:
-            print("MLP -> {:.3f}".format(result))
-        elif idx == 1:
             print("RNN -> {:.3f}".format(result))
-        elif idx == 2:
+        elif idx == 1:
             print("CNN -> {:.3f}".format(result))
 
 
@@ -36,4 +46,4 @@ if __name__ == "__main__":
     filename = args.filename
 
     filename = 'dataset/{}/{}'.format(name_type, filename)
-    start_train(filename, name_type)
+    start_train(filename)

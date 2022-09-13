@@ -1,5 +1,8 @@
+import numpy as np
 import torch
 from torch import nn
+
+from xavier.core.transformation import get_standard
 
 
 class Mlp(nn.Module):
@@ -18,3 +21,8 @@ class Mlp(nn.Module):
     def forward(self, x):
         x = self.dense(x).to(self.device)
         return torch.softmax(x, dim=1).to(self.device)
+
+    def convert_standard(self, feature):
+        data_standard = np.asarray(get_standard([feature], self.standard))[0]
+        data_standard = np.array([data_standard])
+        return data_standard

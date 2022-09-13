@@ -41,11 +41,14 @@ if __name__ == "__main__":
     elif model_type == "cnn":
         model_type = Type.cnn
 
+    your_app_client_id = 'yc0M0hL4rOEwcj8hcB7tuyqNe5Snzfeh4d9R5Eru'
+    your_app_client_secret = 'b9vnOoWJp8i1Qh0JTXNMZ9glb9N1Qk0fVE9fVtQtbBFXwdPuP0GfbbXEsgAwlfzUurXVtCVmZVld4E6lmN7j4QgXT0xjaFDoUaLXhQSuhPFa82j21wZymQVs4u4kh0WF'
+    s = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, train, url)
+
     try:
-        your_app_client_id = ''
-        your_app_client_secret = ''
-        s = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, train, url)
-        streams = ['pow']
-        s.start(streams)
+        s.start()
+    except KeyboardInterrupt:
+        s.stop()
     except Exception as ex:
+        s.stop()
         print(ex)

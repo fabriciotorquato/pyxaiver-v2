@@ -32,13 +32,16 @@ class Subcribe:
         except Exception as ex:
             print('{}'.format(ex))
 
-    def start(self, streams, headset_id=''):
+    def start(self, streams=('pow',), headset_id=''):
         self.streams = streams
 
         if headset_id != '':
             self.c.set_wanted_headset(headset_id)
 
         self.c.open()
+
+    def stop(self):
+        pass
 
     def sub(self, streams):
         self.c.sub_request(streams)
@@ -58,7 +61,7 @@ class Subcribe:
 
     def on_new_pow_data(self, *args, **kwargs):
         data = kwargs.get('data')
-        print('pow data: {}'.format(data))
+        print('pow data: {}'.format(data['pow']))
 
         if not self.is_train:
             feature = data['pow']
@@ -84,7 +87,6 @@ class Subcribe:
                     print('{}'.format(ex))
 
     def on_create_session_done(self, *args, **kwargs):
-        print('on_create_session_done')
         self.sub(self.streams)
 
     def on_inform_error(self, *args, **kwargs):

@@ -10,3 +10,5 @@ websocket-client
 torch
 torchvision
 tqdm
+python-dispatch
+pyqt5
