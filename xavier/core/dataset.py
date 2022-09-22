@@ -22,10 +22,7 @@ class Dataset(torch.utils.data.Dataset):
                 temp_x.append(np.asarray(arr))
 
                 if index > 3:
-                    temp = []
-                    temp.append(temp_x[index - 2])
-                    temp.append(temp_x[index - 1])
-                    temp.append(temp_x[index])
+                    temp = [temp_x[index - 2], temp_x[index - 1], temp_x[index]]
                     temp = np.asarray(temp).reshape((3, matriz_size, matriz_size))
                     temp_closter_x.append(np.asarray(temp))
 
@@ -40,6 +37,15 @@ class Dataset(torch.utils.data.Dataset):
                 arr = np.append(x_row, arr, axis=0)
                 arr = arr.reshape((matriz_size, matriz_size))
                 temp_x.append(np.asarray(arr))
+            self.data = torch.from_numpy(np.asarray(temp_x))
+
+        elif model_type == Type.eegnet:
+            for x_row in x:
+                # arr = np.zeros(input_layer - len(x_row))
+                # arr = np.append(x_row, arr, axis=0)
+                arr = x_row.reshape((5, 5))
+                temp_x.append([arr])
+            print(np.asarray(temp_x).shape)
             self.data = torch.from_numpy(np.asarray(temp_x))
 
         self.labels = torch.from_numpy(y)

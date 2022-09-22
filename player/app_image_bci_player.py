@@ -1,7 +1,7 @@
 import os
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import listdir
 
 from PyQt5.QtCore import QPoint, Qt, QTimer
@@ -31,7 +31,8 @@ class App(QWidget):
         self.enabled_classification = False
         self.visible = False
         self.play_media = False
-        self.files = self.get_files()
+        self.original_files = self.get_files()
+        self.times_image = 10
 
         layout = QVBoxLayout()
         self.label = QLabel(self)
@@ -71,7 +72,6 @@ class App(QWidget):
         self.combo_box.show()
         self.py_button.show()
         m_width = self.frameGeometry().width()
-        m_height = self.frameGeometry().height()
         m_left = self.frameGeometry().left()
         m_top = self.frameGeometry().top()
         if self.widescreen:
@@ -83,7 +83,6 @@ class App(QWidget):
         self.combo_box.hide()
         self.py_button.hide()
         m_width = self.frameGeometry().width()
-        m_height = self.frameGeometry().height()
         m_left = self.frameGeometry().left()
         m_top = self.frameGeometry().top()
         if self.widescreen:
@@ -128,10 +127,10 @@ class App(QWidget):
             if self.image_number == len(self.files):
                 self.handle_quit()
             else:
-                self.image_number = self.image_number + 1
+                self.image_number += 1
                 self.stop_timer(self.timer)
                 self.enabled_classification = False
-                if self.image_number == 1 or (self.image_number - 1) % 10 == 0:
+                if self.image_number == 1 or (self.image_number - 1) % self.times_image == 0:
                     self.start_time_button()
                     self.handle_open_eyes()
                 else:
@@ -149,7 +148,7 @@ class App(QWidget):
             self.play()
 
     def play(self):
-        self.files = self.get_files()
+        self.original_files = self.get_files()
         self.random_list()
         self.image_number = 0
         self.timer = QTimer(self)
@@ -171,27 +170,27 @@ class App(QWidget):
         self.py_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
 
     def save_image_classification(self, array_file):
-        path = self.save_path + "classification.txt"
-
+        path = "{}classification.txt".format(self.save_path)
         with open(path, "w+") as file:
-            for (index, value) in enumerate(array_file):
-                file.write(str(index) + " " + value + "\n")
+            for times in range((len(array_file) + 1) // self.times_image):
+                begin_time = array_file[times * self.times_image]
+                file.write("{}\n".format(begin_time.strftime("%Y-%m-%d %H:%M:%S")))
+                end_time = array_file[(times * self.times_image) + (self.times_image - 1)] + timedelta(seconds=5)
+                file.write("{}\n".format(end_time.strftime("%Y-%m-%d %H:%M:%S")))
 
         os.chmod(path, 0o777)
 
     def random_list(self):
-        original_files = self.files
         self.files = []
 
-        for image_file in original_files:
-            for _ in range(10):
+        for image_file in self.original_files:
+            for _ in range(self.times_image):
                 self.files.append(image_file)
 
-        path = self.save_path + "data_random.txt"
+        path = "{}data_random.txt".format(self.save_path)
         with open(path, "w+") as file:
-            for (index, value) in enumerate(self.files):
-                file.write(str(index) + " " +
-                           value.replace(self.image_path, "") + "\n")
+            for value in self.original_files:
+                file.write("{}\n".format(value.replace(self.image_path, "")))
 
         os.chmod(path, 0o777)
 
@@ -232,7 +231,7 @@ class App(QWidget):
         self.timer.start(5000)
 
     def show_classification_color(self):
-        if self.image_number % 10 == 0:
+        if self.image_number % self.times_image == 0:
             self.visible = False
         self.enabled_classification = True
         pixmap = QPixmap(self.files[self.image_number - 1])
@@ -250,7 +249,7 @@ class App(QWidget):
             self.frameGeometry().height() * 0.85) * 0.01, pixmap)
         painter.end()
         self.label.setPixmap(pixmap2)
-        self.image_classification.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        self.image_classification.append(datetime.now())
 
     def hidden_classification_color(self):
         self.enabled_classification = False
@@ -273,7 +272,6 @@ class App(QWidget):
     def stop_timer(self, timer):
         if timer:
             timer.stop()
-            timer = None
 
     def hidden_button(self, py_button):
         py_button.hide()
@@ -283,7 +281,6 @@ class App(QWidget):
 
     def wheelEvent(self, event):
         m_width = self.frameGeometry().width()
-        m_height = self.frameGeometry().height()
         m_left = self.frameGeometry().left()
         m_top = self.frameGeometry().top()
         m_scale = event.angleDelta().y() / 5

@@ -1,4 +1,4 @@
-FORWARD = 'forward'
-TURN_LEFT = 'turn left'
-TURN_RIGHT = 'turn right'
-STOP = 'stop'
+FORWARD = '0'
+TURN_LEFT = '1'
+TURN_RIGHT = '2'
+STOP = '-1'

@@ -16,10 +16,7 @@ def get_args():
     parser = ArgumentParser(description='Xavier')
     parser.add_argument('--model', type=str, default='')
     parser.add_argument('--type_nn', type=str, default='')
-    parser.add_argument('--path', type=str, default='')
-    parser.add_argument('--username', type=str, default='')
-    parser.add_argument('--train', type=bool, default=False)
-    parser.add_argument('--url', type=str, default='wss://localhost:6868')
+    parser.add_argument('--ip', type=str, default="192.168.0.15")
     args = parser.parse_args()
     return args
 
@@ -29,13 +26,10 @@ if __name__ == "__main__":
 
     model = args.model
     model_type = args.type_nn
-    path = args.path
-    username = args.username
-    train = args.train
-    url = args.url
+    ip = args.ip
 
-    if model_type == "mlp":
-        model_type = Type.mlp
+    if model_type == "eegnet":
+        model_type = Type.eegnet
     elif model_type == "rnn":
         model_type = Type.rnn
     elif model_type == "cnn":
@@ -43,12 +37,12 @@ if __name__ == "__main__":
 
     your_app_client_id = 'yc0M0hL4rOEwcj8hcB7tuyqNe5Snzfeh4d9R5Eru'
     your_app_client_secret = 'b9vnOoWJp8i1Qh0JTXNMZ9glb9N1Qk0fVE9fVtQtbBFXwdPuP0GfbbXEsgAwlfzUurXVtCVmZVld4E6lmN7j4QgXT0xjaFDoUaLXhQSuhPFa82j21wZymQVs4u4kh0WF'
-    s = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, train, url)
+    subcribe = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, ip)
 
     try:
-        s.start()
+        subcribe.start()
     except KeyboardInterrupt:
-        s.stop()
+        subcribe.stop()
     except Exception as ex:
-        s.stop()
+        subcribe.stop()
         print(ex)

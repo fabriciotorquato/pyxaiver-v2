@@ -62,8 +62,9 @@ class Record:
         error_data = kwargs.get('error_data')
         print(error_data)
         try:
-            self.c.stop_record()
-            self.c.close()
+            if self.c.session_id != '':
+                self.c.stop_record()
+                self.c.close()
         except Exception as ex:
             print(ex)
             raise KeyboardInterrupt

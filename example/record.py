@@ -35,4 +35,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         record_eeg.stop()
     except Exception as ex:
+        record_eeg.stop()
         print(ex)

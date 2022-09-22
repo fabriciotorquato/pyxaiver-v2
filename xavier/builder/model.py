@@ -36,7 +36,8 @@ class Model(object):
             torch.cuda.set_device(0)
         print("Algorithim use: ", self.device)
 
-        self.filename_model = "models/{}/{}".format(self.model_cls.NAME_TYPE, filename.split('.')[-2].split('/')[-1])
+        self.filename_model = "models/{}/{}".format(self.model_cls.NAME_TYPE.value,
+                                                    filename.split('.')[-2].split('/')[-1])
         self.filename_model = os.path.abspath(self.filename_model)
         Path(self.filename_model).mkdir(parents=True, exist_ok=True)
 
@@ -83,9 +84,7 @@ class Model(object):
         return train_loader, valid_loader, test_loader, train_size, valid_size
 
     def save_model(self, acc, standard):
-        path = "{}/{}".format(self.filename_model, self.model_cls.NAME_TYPE)
-        Path(path).mkdir(parents=True, exist_ok=True)
-        filename = '{}/{} {:.2f}.pkl'.format(path, self.version, acc)
+        filename = '{}/{} {:.2f}.pkl'.format(self.filename_model, self.version, acc)
         torch.save({'model': self.model_training.model.state_dict(), 'standard': standard}, filename)
 
     def create_model(self, times):

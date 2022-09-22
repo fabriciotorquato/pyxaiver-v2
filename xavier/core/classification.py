@@ -4,8 +4,6 @@ from datetime import datetime
 
 import numpy as np
 
-import xavier.constants.eeg as eeg
-
 
 class Classification(object):
 
@@ -15,7 +13,7 @@ class Classification(object):
         self.raw_data = self.csv_modification(file_csv)
         self.time_raw_data = self.get_time_raw_data(file_csv)
         self.timestamps = self.get_time_classification(classification)
-        self.array_index = self.find_index()
+        self.feature = self.find_feature()
 
     def get_time_raw_data(self, path):
         with open(path) as file_csv:
@@ -26,9 +24,9 @@ class Classification(object):
         return data_csv.ravel()
 
     def get_time_classification(self, path):
-        with open(path) as file_csv:
-            data_csv = csv.reader(file_csv)
-            timestamps = np.array([np.array(row)[0] for row in data_csv])
+        with open(path) as file_data:
+            list_files = list(file_data)
+        timestamps = np.array(list_files).reshape(len(list_files) // 2, 2)
         return timestamps
 
     def csv_modification(self, path):
@@ -45,27 +43,17 @@ class Classification(object):
             data_training = np.array([each_line for each_line in data_csv])
         return data_training
 
-    def find_index(self):
-        array_index = []
-        index_timestamps = 0
-        for index_raw_data, value in enumerate(self.time_raw_data):
-            time_2 = self.timestamps[index_timestamps].split(" ", 1)[1]
-            time_2 = int(time.mktime(datetime.strptime(time_2, "%Y-%m-%d %H:%M:%S").timetuple()))
-            if time_2 < value:
-                array_index.append(max(0, index_raw_data - 1))
-                index_timestamps = index_timestamps + 1
-                if index_timestamps == len(self.timestamps):
-                    break
-        return array_index
-
-    def get_many_seconds(self):
+    def find_feature(self):
         feature = []
-        for index in self.array_index:
-            step_index = 0
-            while eeg.SAMPLING_RATE + eeg.WINDOW_SIZE * step_index < eeg.SECONDS_RECORD * eeg.SAMPLING_RATE:
-                feature.append(
-                    self.raw_data[
-                    index + step_index * eeg.WINDOW_SIZE:index + eeg.SAMPLING_RATE + step_index * eeg.WINDOW_SIZE])
-                step_index += 1
-            self.seconds = step_index
+        for idx, timestamps in enumerate(self.timestamps):
+            feature.append([])
+            begin_time = timestamps[0].strip()
+            begin_time = int(time.mktime(datetime.strptime(begin_time, "%Y-%m-%d %H:%M:%S").timetuple()))
+
+            end_time = timestamps[1].strip()
+            end_time = int(time.mktime(datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S").timetuple()))
+
+            for index_raw_data, value in enumerate(self.time_raw_data):
+                if begin_time <= value <= end_time:
+                    feature[idx].append(self.raw_data[index_raw_data])
         return feature

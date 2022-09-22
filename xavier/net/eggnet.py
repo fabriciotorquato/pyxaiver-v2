@@ -1,54 +1,64 @@
+import math
+
+import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
+
+from xavier.constants.type import Type
+from xavier.core.transformation import get_standard
 
 
 class EEGNet(nn.Module):
-    def __init__(self):
+    NAME_TYPE = Type.eegnet
+
+    def __init__(self, device=None):
         super(EEGNet, self).__init__()
+        self.device = device
         self.T = 128
+        self.input_layer = 64
+        self.matriz_size = int(math.sqrt(self.input_layer))
+        self.output_layer = 3
+        self.feature_cnn = []
 
-        # Layer 1
-        self.conv1 = nn.Conv2d(1, 16, (1, 64), padding=0)
-        self.batchnorm1 = nn.BatchNorm2d(16, False)
+        self.F1 = 8
+        self.F2 = 16
+        self.D = 2
 
-        # Layer 2
-        self.padding1 = nn.ZeroPad2d((16, 17, 0, 1))
-        self.conv2 = nn.Conv2d(1, 4, (2, 32))
-        self.batchnorm2 = nn.BatchNorm2d(4, False)
-        self.pooling2 = nn.MaxPool2d(2, 4)
+        # Conv2d(in,out,kernel,stride,padding,bias)
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(1, self.F1, (1, 5), padding=(0, 32), bias=False),
+            nn.BatchNorm2d(self.F1)
+        )
 
-        # Layer 3
-        self.padding2 = nn.ZeroPad2d((2, 1, 4, 3))
-        self.conv3 = nn.Conv2d(4, 4, (8, 4))
-        self.batchnorm3 = nn.BatchNorm2d(4, False)
-        self.pooling3 = nn.MaxPool2d((2, 4))
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(self.F1, self.D * self.F1, (5, 1), groups=self.F1, bias=False),
+            nn.BatchNorm2d(self.D * self.F1),
+            nn.ELU(),
+            nn.AvgPool2d((1, 4)),
+            nn.Dropout(0.5)
+        )
 
-        # FC Layer
-        # NOTE: This dimension will depend on the number of timestamps per sample in your data.
-        self.fc1 = nn.Linear(4 * 2 * 7, 1)
+        self.Conv3 = nn.Sequential(
+            nn.Conv2d(self.D * self.F1, self.D * self.F1, (1, 16), padding=(0, 8), groups=self.D * self.F1, bias=False),
+            nn.Conv2d(self.D * self.F1, self.F2, (1, 1), bias=False),
+            nn.BatchNorm2d(self.F2),
+            nn.ELU(),
+            nn.AvgPool2d((1, 8)),
+            nn.Dropout(0.5)
+        )
+
+        self.classifier = nn.Linear(32, self.output_layer, bias=True)
 
     def forward(self, x):
-        # Layer 1
-        x = F.elu(self.conv1(x))
-        x = self.batchnorm1(x)
-        x = F.dropout(x, 0.25)
-        x = x.permute(0, 3, 1, 2)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.Conv3(x)
 
-        # Layer 2
-        x = self.padding1(x)
-        x = F.elu(self.conv2(x))
-        x = self.batchnorm2(x)
-        x = F.dropout(x, 0.25)
-        x = self.pooling2(x)
-
-        # Layer 3
-        x = self.padding2(x)
-        x = F.elu(self.conv3(x))
-        x = self.batchnorm3(x)
-        x = F.dropout(x, 0.25)
-        x = self.pooling3(x)
-
-        # FC Layer
-        x = x.view(-1, 4 * 2 * 7)
-        x = F.sigmoid(self.fc1(x))
+        x = x.view(-1, 32)
+        x = self.classifier(x)
         return x
+
+    def convert_standard(self, feature):
+        x_row = np.asarray(get_standard([feature], self.standard))[0]
+        data_standard = np.asarray(x_row).reshape((5, 5))
+        data_standard = np.array([[data_standard]])
+        return data_standard

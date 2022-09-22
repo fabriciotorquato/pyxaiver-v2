@@ -1,47 +1,47 @@
-import json
-import ssl
-
-import websocket
+import socket
+import threading
 
 from xavier.core.training import Training as ModelTraining
 from xavier.lib.cortex.cortex import Cortex
 
 
 class Subcribe:
-    def __init__(self, client_id, client_secret, path_model, model_type, is_train=False, url="wss://localhost:6868"):
+    PORT = 5000
+
+    def __init__(self, client_id, client_secret, path_model, model_type, ip="192.168.0.15"):
+        self.streams = ('pow',)
+        self.ip = ip
+        self.socket_stream = None
         self.c = Cortex(client_id, client_secret, debug_mode=True)
         self.c.bind(create_session_done=self.on_create_session_done)
-        self.c.bind(new_data_labels=self.on_new_data_labels)
-        self.c.bind(new_dev_data=self.on_new_dev_data)
         self.c.bind(new_pow_data=self.on_new_pow_data)
         self.c.bind(inform_error=self.on_inform_error)
 
         self.model_type = model_type
         self.path_model = path_model
-        self.is_train = is_train
 
-        self.ws = websocket.create_connection(url, sslopt={"cert_reqs": ssl.CERT_NONE}) if url else None
+        self.model_training = ModelTraining()
+        self.model_training.load_model(self.model_type, self.path_model)
 
-        if not self.is_train:
-            self.init_model()
+        if self.ip != "":
+            self.socket_stream = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+            # self.socket_stream.bind((self.ip, Subcribe.PORT))
 
-    def init_model(self):
+    def start(self):
+        print("Start Render")
         try:
-            self.model_training = ModelTraining()
-            self.model_training.load_model(self.model_type, self.path_model)
+            self.c.open()
         except Exception as ex:
-            print('{}'.format(ex))
-
-    def start(self, streams=('pow',), headset_id=''):
-        self.streams = streams
-
-        if headset_id != '':
-            self.c.set_wanted_headset(headset_id)
-
-        self.c.open()
+            print(ex)
 
     def stop(self):
-        pass
+        print("Stop Record")
+        self.unsub(self.streams)
+        if self.socket_stream:
+            try:
+                self.socket_stream.close()
+            except Exception as ex:
+                print(ex)
 
     def sub(self, streams):
         self.c.sub_request(streams)
@@ -49,42 +49,22 @@ class Subcribe:
     def unsub(self, streams):
         self.c.unsub_request(streams)
 
-    def on_new_data_labels(self, *args, **kwargs):
-        data = kwargs.get('data')
-        stream_name = data['streamName']
-        stream_labels = data['labels']
-        print('{} labels are : {}'.format(stream_name, stream_labels))
-
-    def on_new_dev_data(self, *args, **kwargs):
-        data = kwargs.get('data')
-        print('dev data: {}'.format(data))
-
     def on_new_pow_data(self, *args, **kwargs):
         data = kwargs.get('data')
-        print('pow data: {}'.format(data['pow']))
 
-        if not self.is_train:
-            feature = data['pow']
-            # feature = get_feature(delta, theta, alpha, beta)
-            result = self.model_training.predict(feature)
+        feature = data['pow']
+        # feature = get_feature(delta, theta, alpha, beta)
+        result = self.model_training.predict(feature)
+        if self.socket_stream:
+            process_thread = threading.Thread(target=self.send_data, args=(result,))
+            process_thread.start()
 
-            print('value: {}'.format(result))
-
-            if self.ws:
-                try:
-                    QUERY_RECORD_ID = 100
-                    query_predict_request = {
-                        "jsonrpc": "2.0",
-                        "method": "queryPredict",
-                        "params": {
-                            "predict": result,
-                        },
-                        "id": QUERY_RECORD_ID
-                    }
-                    self.ws.send(json.dumps(query_predict_request))
-                    result = self.ws.recv()
-                except Exception as ex:
-                    print('{}'.format(ex))
+    def send_data(self, result):
+        try:
+            self.socket_stream.sendto(str(result).encode('utf8'), (self.ip, Subcribe.PORT))
+            print('send value: {}'.format(result))
+        except Exception as ex:
+            print('{}'.format(ex))
 
     def on_create_session_done(self, *args, **kwargs):
         self.sub(self.streams)
@@ -92,3 +72,9 @@ class Subcribe:
     def on_inform_error(self, *args, **kwargs):
         error_data = kwargs.get('error_data')
         print(error_data)
+        try:
+            if self.c.session_id != '':
+                self.unsub(self.streams)
+        except Exception as ex:
+            print(ex)
+            raise KeyboardInterrupt

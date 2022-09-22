@@ -1,10 +1,11 @@
-from SunFounder_Ultrasonic_Avoidance import Ultrasonic_Avoidance
-from picar import front_wheels
-from picar import back_wheels
-import xavier_command
-import time
-import picar
 import random
+
+import picar
+from picar import back_wheels
+from picar import front_wheels
+
+import xavier_command
+from SunFounder_Ultrasonic_Avoidance import Ultrasonic_Avoidance
 
 
 class XavierCar(object):
@@ -56,13 +57,13 @@ class XavierCar(object):
 
     def _left_angle(self):
         angle = 180
-        print(self.last_angle,angle)
+        print(self.last_angle, angle)
         self.last_angle = angle
         return angle
 
     def _right_angle(self):
         angle = 0
-        print(self.last_angle,angle)
+        print(self.last_angle, angle)
         self.last_angle = angle
         return angle
 
@@ -72,8 +73,8 @@ class XavierCar(object):
         self._update_status()
 
     def send_command(self, command):
-         self.command = command.data
-         self._update_status()
+        self.command = command.data
+        self._update_status()
 
     def _update_status(self):
         distance = self.ua.get_distance()
@@ -101,18 +102,18 @@ class XavierCar(object):
                         self.fw.turn(90)
                         self.bw.forward()
                         self.bw.speed = self.forward_speed
-                    
+
                     elif self.command == xavier_command.TURN_LEFT:
                         print("[Comando Xavier] Rotacionar Esquerda")
-                        self.fw.turn(90-self.step)
+                        self.fw.turn(90 - self.step)
                         self.bw.forward()
-                        self.bw.speed = self.forward_speed    
+                        self.bw.speed = self.forward_speed
 
                     elif self.command == xavier_command.TURN_RIGHT:
                         print("[Comando Xavier] Rotacionar Direita")
-                        self.fw.turn(90+self.step)
+                        self.fw.turn(90 + self.step)
                         self.bw.forward()
-                        self.bw.speed = self.forward_speed  
+                        self.bw.speed = self.forward_speed
         else:  # forward
             print("[Comando Autonomo] Reiniciando")
             self.fw.turn_straight()
@@ -125,4 +126,3 @@ class XavierCar(object):
         print("[Comando Autonomo] Desligando")
         self.bw.stop()
         self.fw.turn_straight()
-

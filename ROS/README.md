@@ -1,8 +1,8 @@
 # Ros
+
 ## Install ROS
 
 * [ROS](http://wiki.ros.org/kinetic/Installation)
-
 
 ## Library
 
@@ -13,18 +13,19 @@
 * sudo pip install -U scikit-learn
 
 ### ROS
- * roscore 
- * sudo apt-get install ros-indigo-turtlesim 
- 
 
- 
+* roscore
+* sudo apt-get install ros-indigo-turtlesim
+
 ## Criar o workplace
+
 * mkdir -p ~/ros/catkin_ws/src
 * cd ~/ros/catkin_ws
 * catkin_make
 * colar a pasta turtlesim_cleaner ~/ros/catkin_ws/src
 
 ## Run
+
     in script knnTalker configure the path for the computer
     
     open the first terminal and start the ROS
@@ -42,5 +43,3 @@
     cd ros/catkin_ws
     source devel/setup.bash
     rosrun turtlesim_cleaner listener.py
-
-    

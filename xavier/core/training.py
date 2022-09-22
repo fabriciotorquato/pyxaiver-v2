@@ -7,6 +7,7 @@ from torch.autograd import Variable
 
 from xavier.constants.type import Type
 from xavier.net.cnn import Cnn
+from xavier.net.eggnet import EEGNet
 from xavier.net.mlp import Mlp
 from xavier.net.rnn import Rnn
 
@@ -34,10 +35,12 @@ class Training:
             self.model = Rnn()
         elif self.model_type == Type.cnn:
             self.model = Cnn()
+        elif self.model_type == Type.eegnet:
+            self.model = EEGNet()
 
         checkpoint = torch.load(path_model, map_location='cpu')
         self.model.load_state_dict(checkpoint['model'])
-        self.standard = checkpoint['standard']
+        self.model.standard = checkpoint['standard']
         self.model.eval()
 
     def train(self, train_loader, size):
