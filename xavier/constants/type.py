@@ -6,3 +6,4 @@ class Type(Enum):
     rnn = "rnn"
     cnn = "cnn"
     eegnet = "eegnet"
+    chrononet = "chrononet"

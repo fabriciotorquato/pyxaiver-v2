@@ -1,4 +1,5 @@
 import socket
+import statistics
 import threading
 
 from xavier.core.training import Training as ModelTraining
@@ -7,6 +8,7 @@ from xavier.lib.cortex.cortex import Cortex
 
 class Subcribe:
     PORT = 5000
+    NUMBER_PREDICT = 8
 
     def __init__(self, client_id, client_secret, path_model, model_type, ip="192.168.0.15"):
         self.streams = ('pow',)
@@ -22,6 +24,8 @@ class Subcribe:
 
         self.model_training = ModelTraining()
         self.model_training.load_model(self.model_type, self.path_model)
+
+        self.list_predict = []
 
         if self.ip != "":
             self.socket_stream = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -51,12 +55,13 @@ class Subcribe:
 
     def on_new_pow_data(self, *args, **kwargs):
         data = kwargs.get('data')
-
         feature = data['pow']
-        # feature = get_feature(delta, theta, alpha, beta)
         result = self.model_training.predict(feature)
-        if self.socket_stream:
-            process_thread = threading.Thread(target=self.send_data, args=(result,))
+        self.list_predict.append(result)
+        if self.socket_stream and len(self.list_predict) > Subcribe.NUMBER_PREDICT:
+            predict = statistics.mode(self.list_predict)
+            self.list_predict = []
+            process_thread = threading.Thread(target=self.send_data, args=(predict,))
             process_thread.start()
 
     def send_data(self, result):

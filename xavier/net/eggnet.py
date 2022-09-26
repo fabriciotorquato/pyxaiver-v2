@@ -17,7 +17,6 @@ class EEGNet(nn.Module):
         self.input_layer = 64
         self.matriz_size = int(math.sqrt(self.input_layer))
         self.output_layer = 3
-        self.feature_cnn = []
 
         self.F1 = 8
         self.F2 = 16

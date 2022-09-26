@@ -41,11 +41,14 @@ class Dataset(torch.utils.data.Dataset):
 
         elif model_type == Type.eegnet:
             for x_row in x:
-                # arr = np.zeros(input_layer - len(x_row))
-                # arr = np.append(x_row, arr, axis=0)
                 arr = x_row.reshape((5, 5))
                 temp_x.append([arr])
-            print(np.asarray(temp_x).shape)
+            self.data = torch.from_numpy(np.asarray(temp_x))
+
+        elif model_type == Type.chrononet:
+            for x_row in x:
+                arr = x_row.reshape((5, 5))
+                temp_x.append(arr)
             self.data = torch.from_numpy(np.asarray(temp_x))
 
         self.labels = torch.from_numpy(y)
