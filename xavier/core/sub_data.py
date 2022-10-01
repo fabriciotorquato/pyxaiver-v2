@@ -8,13 +8,13 @@ from xavier.lib.cortex.cortex import Cortex
 
 class Subcribe:
     PORT = 5000
-    NUMBER_PREDICT = 8
+    NUMBER_PREDICT = 3
 
     def __init__(self, client_id, client_secret, path_model, model_type, ip="192.168.0.15"):
         self.streams = ('pow',)
         self.ip = ip
         self.socket_stream = None
-        self.c = Cortex(client_id, client_secret, debug_mode=True)
+        self.c = Cortex(client_id, client_secret, debug_mode=False)
         self.c.bind(create_session_done=self.on_create_session_done)
         self.c.bind(new_pow_data=self.on_new_pow_data)
         self.c.bind(inform_error=self.on_inform_error)
@@ -29,7 +29,6 @@ class Subcribe:
 
         if self.ip != "":
             self.socket_stream = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-            # self.socket_stream.bind((self.ip, Subcribe.PORT))
 
     def start(self):
         print("Start Render")
@@ -46,6 +45,7 @@ class Subcribe:
                 self.socket_stream.close()
             except Exception as ex:
                 print(ex)
+        self.c.close()
 
     def sub(self, streams):
         self.c.sub_request(streams)
@@ -58,16 +58,17 @@ class Subcribe:
         feature = data['pow']
         result = self.model_training.predict(feature)
         self.list_predict.append(result)
-        if self.socket_stream and len(self.list_predict) > Subcribe.NUMBER_PREDICT:
+        if len(self.list_predict) > Subcribe.NUMBER_PREDICT:
             predict = statistics.mode(self.list_predict)
             self.list_predict = []
-            process_thread = threading.Thread(target=self.send_data, args=(predict,))
-            process_thread.start()
+            print('value: {}'.format(predict))
+            if self.socket_stream:
+                process_thread = threading.Thread(target=self.send_data, args=(predict,))
+                process_thread.start()
 
     def send_data(self, result):
         try:
             self.socket_stream.sendto(str(result).encode('utf8'), (self.ip, Subcribe.PORT))
-            print('send value: {}'.format(result))
         except Exception as ex:
             print('{}'.format(ex))
 

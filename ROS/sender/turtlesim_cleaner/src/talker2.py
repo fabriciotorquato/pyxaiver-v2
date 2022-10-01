@@ -4,6 +4,8 @@ import socket
 import rospy
 from std_msgs.msg import String
 
+import xavier_command
+
 try:
 
     HOST = ''
@@ -32,6 +34,11 @@ try:
         pub.publish(msg)
         rate.sleep()
 except rospy.ROSInterruptException:
-    pass
+    car_publisher = rospy.Publisher('command', String, queue_size=10)
+    decoy = xavier_command.STOP
+    car_publisher.publish(decoy)
 except Exception as ex:
+    car_publisher = rospy.Publisher('command', String, queue_size=10)
+    decoy = xavier_command.STOP
+    car_publisher.publish(decoy)
     print(ex)

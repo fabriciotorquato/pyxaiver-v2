@@ -71,5 +71,5 @@ class ChronoNet(nn.Module):
     def convert_standard(self, feature):
         x_row = np.asarray(get_standard([feature], self.standard))[0]
         data_standard = np.asarray(x_row).reshape((5, 5))
-        data_standard = np.array([[data_standard]])
+        data_standard = np.array([data_standard])
         return data_standard

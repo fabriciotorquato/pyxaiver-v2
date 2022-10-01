@@ -250,8 +250,10 @@ class Cortex(Dispatcher):
         elif req_id == CREATE_RECORD_REQUEST_ID:
             self.record_id = result_dic['record']['uuid']
             self.emit('create_record_done', data=result_dic['record'])
+            print("Start Record")
         elif req_id == STOP_RECORD_REQUEST_ID:
             self.emit('stop_record_done', data=result_dic['record'])
+            print("Stop Record")
         elif req_id == EXPORT_RECORD_ID:
             # handle data lable
             success_export = []

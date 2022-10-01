@@ -1,0 +1,1 @@
+sshpass -p raspberry scp -r jarvis@192.168.0.15:~/Documents/pyxavier-v2/models ~/Documents/pyxavier-v2/models/gpu

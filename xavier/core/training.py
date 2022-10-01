@@ -6,6 +6,7 @@ from sklearn import metrics
 from torch.autograd import Variable
 
 from xavier.constants.type import Type
+from xavier.net.chrononet import ChronoNet
 from xavier.net.cnn import Cnn
 from xavier.net.eggnet import EEGNet
 from xavier.net.mlp import Mlp
@@ -37,6 +38,8 @@ class Training:
             self.model = Cnn()
         elif self.model_type == Type.eegnet:
             self.model = EEGNet()
+        elif self.model_type == Type.chrononet:
+            self.model = ChronoNet()
 
         checkpoint = torch.load(path_model, map_location='cpu')
         self.model.load_state_dict(checkpoint['model'])

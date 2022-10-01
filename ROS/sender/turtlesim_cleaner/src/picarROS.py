@@ -11,10 +11,12 @@ class TurtleBot:
     def __init__(self):
         self.xavier_car = XavierCar()
         self.xavier_car.start_avoidance()
+        self.xavier_car.deactived()
 
     def listener(self):
         rospy.init_node('picar_controller', anonymous=True)
         rospy.Subscriber('command', String, self.xavier_car.send_command)
+        rospy.Subscriber('key_catch', String, self.xavier_car.key_catch)
         rospy.spin()
 
     def stop(self):
@@ -27,4 +29,4 @@ if __name__ == '__main__':
         turtleBot.listener()
     except Exception as ex:
         print(ex)
-        turtleBot.stop()
+    turtleBot.stop()

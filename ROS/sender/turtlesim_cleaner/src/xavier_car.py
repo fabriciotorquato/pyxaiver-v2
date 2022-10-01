@@ -1,7 +1,9 @@
-from picar import front_wheels
-from picar import back_wheels
-import xavier_command
 import picar
+from picar import back_wheels
+from picar import front_wheels
+
+import xavier_command
+
 
 class XavierCar(object):
     def __init__(self):
@@ -23,14 +25,31 @@ class XavierCar(object):
         self.last_angle = 90
         self.last_dir = 0
         self.command = xavier_command.STOP
+        self.enabled = False
 
     def start_avoidance(self):
         self._update_status()
 
+    def key_catch(self, command):
+        if command.data == 'i':
+            self.actived()
+        else:
+            self.deactived()
+
+    def actived(self):
+        self.enabled = True
+        self.fw.turn_straight()
+        self.bw.stop()
+
+    def deactived(self):
+        self.enabled = False
+        self.fw.turn_straight()
+        self.bw.stop()
+
     def send_command(self, command):
         self.command = command.data
-        print(command.data)
-        self._update_status()
+        if self.enabled:
+            self._update_status()
 
     def _update_status(self):
         if self.command == xavier_command.FORWARD:
@@ -48,7 +67,6 @@ class XavierCar(object):
         elif self.command == xavier_command.STOP:
             self.fw.turn_straight()
             self.bw.stop()
-
 
     def stop(self):
         self.bw.stop()

@@ -8,7 +8,6 @@ from sklearn.model_selection import train_test_split
 from torch import nn
 
 import xavier.constants.config as config
-from xavier.builder.early_stopping import EarlyStopping
 from xavier.core.data_loader import DataLoader
 from xavier.core.dataset import Dataset
 from xavier.core.training import Training
@@ -42,14 +41,10 @@ class Model(object):
         Path(self.filename_model).mkdir(parents=True, exist_ok=True)
 
     def __train_model(self, train_loader, valid_loader, test_loader, train_size, valid_size, filename):
-        early_stopping = EarlyStopping(tolerance=5, min_delta=10)
         for epoch in range(self.num_epoch):
             print("Epoch {}/{}".format(epoch + 1, self.num_epoch + 1))
             epoch_train_loss = self.model_training.train(train_loader, train_size)
             epoch_validate_loss = self.model_training.validation(valid_loader, valid_size)
-            early_stopping(epoch_train_loss, epoch_validate_loss)
-            if early_stopping.early_stop:
-                break
         print('Data train:')
         self.model_training.validation(train_loader, train_size, validation=False)
         print('Data Test:')
@@ -65,6 +60,7 @@ class Model(object):
 
     def get_dataset(self):
         dataset = np.loadtxt(self.filename, skiprows=1, delimiter=',', dtype=np.float64)
+        dataset = self._remove_outliers(dataset)
         dataset_x = np.asarray([l[1:] for l in dataset])
         dataset_y = np.asarray([l[0] for l in dataset])
         return dataset_x, dataset_y
@@ -87,12 +83,28 @@ class Model(object):
         filename = '{}/{} {:.2f}.pkl'.format(self.filename_model, self.version, acc)
         torch.save({'model': self.model_training.model.state_dict(), 'standard': standard}, filename)
 
+    def _remove_outliers(self, data):
+        filter_dataset = np.array(data[::])
+        for col in range(1, len(filter_dataset.T)):
+            a = np.array(filter_dataset.T[col])
+            upper_quartile = np.percentile(a, 95)
+            lower_quartile = np.percentile(a, 0)
+            IQR = (upper_quartile - lower_quartile) * 1.5
+            quartile_set = (lower_quartile - IQR, upper_quartile + IQR)
+            result_list = []
+            for idx_row, y in enumerate(filter_dataset):
+                if quartile_set[0] <= y[col] <= quartile_set[1]:
+                    result_list.append(filter_dataset[idx_row])
+            filter_dataset = np.array(result_list)
+        return filter_dataset
+
     def create_model(self, times):
         print("Training dataset: {}".format(self.filename))
         self.file_accucary = np.zeros(1)
         for _ in range(times):
             self.model_training = self.__build_model_training()
             dataset_x, dataset_y = self.get_dataset()
+
             x_train, x_test, y_train, y_test = train_test_split(dataset_x, dataset_y, test_size=0.2, random_state=21)
             x_train, x_test, standard = self.get_normalization(x_train, x_test)
             train_loader, valid_loader, test_loader, train_size, valid_size = self.get_loader(x_train, y_train,

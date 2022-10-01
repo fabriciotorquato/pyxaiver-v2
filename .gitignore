@@ -10,3 +10,4 @@ venv/*
 
 models/
 dataset/
+.env

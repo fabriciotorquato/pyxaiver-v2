@@ -1,13 +1,14 @@
 import os
-import sys
 from argparse import ArgumentParser
 
-try:
-    from xavier.core.record import Record
-except:
-    sys.path.insert(0, os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..')))
-    from xavier.core.record import Record
+from dotenv import load_dotenv
+
+from xavier.core.record import Record
+
+load_dotenv()
+
+
+# load_dotenv('/home/miguel/my_project/.env')
 
 
 def get_args():
@@ -25,8 +26,8 @@ if __name__ == "__main__":
     username = args.username
     save_folder = "{}/{}".format(path, username)
 
-    your_app_client_id = 'yc0M0hL4rOEwcj8hcB7tuyqNe5Snzfeh4d9R5Eru'
-    your_app_client_secret = 'b9vnOoWJp8i1Qh0JTXNMZ9glb9N1Qk0fVE9fVtQtbBFXwdPuP0GfbbXEsgAwlfzUurXVtCVmZVld4E6lmN7j4QgXT0xjaFDoUaLXhQSuhPFa82j21wZymQVs4u4kh0WF'
+    your_app_client_id = os.environ.get('EMOTIV_APP_CLIENT_ID', '')
+    your_app_client_secret = os.environ.get('EMOTIV_APP_CLIENT_SECRET', '')
 
     record_eeg = Record(your_app_client_id, your_app_client_secret, save_folder)
 

@@ -50,10 +50,9 @@ class Cnn(nn.Module):
 
         if len(self.feature_cnn) > 2:
             self.feature_cnn = self.feature_cnn[1:]
-            self.feature_cnn.append(self.predict_cnn(data_standard))
+            self.feature_cnn.append(data_standard)
             data_standard = np.array([self.feature_cnn])
+            return data_standard
         else:
-            self.feature_cnn.append(self.predict_cnn(data_standard))
+            self.feature_cnn.append(data_standard)
             return None
-
-        return data_standard

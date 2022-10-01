@@ -28,7 +28,7 @@ def start_train(filename):
 
     model = Model(filename=filename,
                   learning_rate=0.0003,
-                  num_epoch=40,
+                  num_epoch=15,
                   batch_size=128,
                   model_cls=Cnn)
     model.create_model(times=1)
@@ -44,7 +44,7 @@ def start_train(filename):
 
     model = Model(filename=filename,
                   learning_rate=0.001,
-                  num_epoch=30,
+                  num_epoch=15,
                   batch_size=64,
                   model_cls=ChronoNet)
     model.create_model(times=1)

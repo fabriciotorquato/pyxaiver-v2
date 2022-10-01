@@ -1,11 +1,14 @@
+import shutil
 import time
+from os import listdir
+from os.path import isfile, join
 from pathlib import Path
 
 from xavier.lib.cortex.cortex import Cortex
 
 
 class Record:
-    def __init__(self, app_client_id, app_client_secret, record_export_folder, **kwargs):
+    def __init__(self, app_client_id, app_client_secret, record_export_folder):
         self.record_title = 'values'
         self.record_description = ""
         self.record_export_data_types = ['BP']
@@ -16,7 +19,7 @@ class Record:
 
         Path(self.record_export_folder).mkdir(parents=True, exist_ok=True)
 
-        self.c = Cortex(app_client_id, app_client_secret, debug_mode=False, **kwargs)
+        self.c = Cortex(app_client_id, app_client_secret, debug_mode=False)
         self.c.bind(create_session_done=self.on_create_session_done)
         self.c.bind(create_record_done=self.on_create_record_done)
         self.c.bind(stop_record_done=self.on_stop_record_done)
@@ -25,11 +28,9 @@ class Record:
         self.c.bind(inform_error=self.on_inform_error)
 
     def start(self):
-        print("Start Record")
         self.c.open()
 
     def stop(self):
-        print("Stop Record")
         self.c.stop_record()
 
     def export_record(self, folder, stream_types, export_format, record_ids, version, **kwargs):
@@ -56,6 +57,11 @@ class Record:
 
     def on_export_record_done(self, *args, **kwargs):
         self.c.close()
+
+        for filename in listdir(self.record_export_folder):
+            if isfile(join(self.record_export_folder, filename)) and 'values_INSIGHT2' in filename:
+                shutil.copyfile(join(self.record_export_folder, filename),
+                                join(self.record_export_folder, "values.csv"))
         print("File saved")
 
     def on_inform_error(self, *args, **kwargs):

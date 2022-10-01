@@ -12,3 +12,4 @@ torchvision
 tqdm
 python-dispatch
 pyqt5
+python-dotenv
