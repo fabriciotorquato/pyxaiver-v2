@@ -16,7 +16,6 @@ def get_args():
     parser = ArgumentParser(description='Xavier')
     parser.add_argument('--model', type=str, default='')
     parser.add_argument('--type_nn', type=str, default='')
-    parser.add_argument('--ip', type=str, default='')
     args = parser.parse_args()
     return args
 
@@ -26,11 +25,8 @@ if __name__ == "__main__":
 
     model = args.model
     model_type = args.type_nn
-    ip = args.ip
 
-    if model_type == "eegnet":
-        model_type = Type.eegnet
-    elif model_type == "rnn":
+    if model_type == "rnn":
         model_type = Type.rnn
     elif model_type == "cnn":
         model_type = Type.cnn
@@ -39,6 +35,7 @@ if __name__ == "__main__":
 
     your_app_client_id = os.environ.get('EMOTIV_APP_CLIENT_ID', '')
     your_app_client_secret = os.environ.get('EMOTIV_APP_CLIENT_SECRET', '')
+    ip = os.environ.get('MACHINE_IP', '')
     subcribe = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, ip)
 
     try:

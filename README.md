@@ -23,44 +23,58 @@
 
 # Run
 
+## Order
+
+Command | Moviment
+--- | --- 
+0 | up
+1 | left
+2 | right
+
 ## Main Machine
 
-    python -m example.record --path="/Users/ftl/Documents/pyxavier-v2/dataset/test" --username="exp_1"
+    ./scripts/sync_xavier.sh
 
-    python -m example.image_player --path="/Users/ftl/Documents/pyxavier-v2/dataset/exp_4" --username="user_2"
+    ./scripts/sync_ROS.sh
 
-    python -m example.create_dataset --path="/Users/ftl/Documents/pyxavier-v2/dataset/exp_4" 
+    python -m example.record --path="/Users/ftl/Documents/pyxavier-v2/dataset/test" --username="exp_4"
+
+    python -m example.image_player --path="/Users/ftl/Documents/pyxavier-v2/dataset/exp_4" --username="test_1"
+
+    python -m example.create_dataset --path="/Users/ftl/Documents/pyxavier-v2/dataset/exp_4"
+
+    ./scripts/send_dataset.sh exp_4_full
+
+    ./scripts/remote_training_model.sh exp_4_full exp_4.csv
+
+    or    
 
     python -m example.training_model --dir="exp_4_full" --filename=exp_4.csv
 
-    python -m example.render --model="/Users/ftl/Documents/pyxavier-v2/models/eegnet/exp_4/V13 0.49.pkl" --type_nn="eegnet" --ip="192.168.0.15"
-
-    python -m example.render --model="/Users/ftl/Documents/pyxavier-v2/models/rnn/exp_4/V13 0.65.pkl" --type_nn="rnn" --ip="192.168.0.15"
-
-    python -m example.render --model="/Users/ftl/Documents/pyxavier-v2/models/cnn/exp_4/V13 0.56.pkl" --type_nn="cnn" --ip="192.168.0.15"
-
-    python -m example.render --model="/Users/ftl/Documents/pyxavier-v2/models/chrononet/exp_4/V13 0.84.pkl" --type_nn="chrononet" --ip="192.168.0.15"
+    ./scripts/get_model.sh exp_4
 
 ## Raspberry
 
     cd ~/ros/catkin_ws
-    source devel/setup.bash
-    rosrun turtlesim_cleaner picarROS.py
+    ./run_rasp.sh
 
 ## ROS Machine, first terminal
 
-    export ROS_MASTER_URI=http://192.168.0.38:11311
-    export ROS_IP=192.168.0.15
-
     cd ~/ros/catkin_ws
-    source devel/setup.bash
-    rosrun turtlesim_cleaner keyCatchRSP.py
+    ./run_1_ros.sh
+
+    # typing 'i' for start
+    # typing 'p' for stop
 
 ## ROS Machine, second terminal
 
-    export ROS_MASTER_URI=http://192.168.0.38:11311
-    export ROS_IP=192.168.0.15
-
     cd ~/ros/catkin_ws
-    source devel/setup.bash
-    rosrun turtlesim_cleaner talker2.py
+    ./run_2_ros.sh
+
+## Main Machine
+
+    python -m example.render --model="/Users/ftl/Documents/pyxavier-v2/models/exp_4/rnn/V13 0.72.pkl" --type_nn="rnn"
+
+    python -m example.render --model="/Users/ftl/Documents/pyxavier-v2/models/exp_4/cnn/V13 0.57.pkl" --type_nn="cnn"
+
+    python -m example.render --model="/Users/ftl/Documents/pyxavier-v2/models/exp_4/chrononet/V13 0.86.pkl" --type_nn="chrononet"

@@ -7,7 +7,7 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from torch import nn
 
-import xavier.constants.config as config
+from xavier.constants import eeg
 from xavier.core.data_loader import DataLoader
 from xavier.core.dataset import Dataset
 from xavier.core.training import Training
@@ -26,7 +26,7 @@ class Model(object):
         self.learning_rate = learning_rate
         self.num_epoch = num_epoch
         self.file_accucary = np.zeros(1)
-        self.version = config.VERSION
+        self.version = eeg.VERSION
         self.model_training = None
 
         use_cuda = torch.cuda.is_available()
@@ -35,16 +35,16 @@ class Model(object):
             torch.cuda.set_device(0)
         print("Algorithim use: ", self.device)
 
-        self.filename_model = "models/{}/{}".format(self.model_cls.NAME_TYPE.value,
-                                                    filename.split('.')[-2].split('/')[-1])
+        self.filename_model = "models/{}/{}".format(filename.split('.')[-2].split('/')[-1],
+                                                    self.model_cls.NAME_TYPE.value)
         self.filename_model = os.path.abspath(self.filename_model)
         Path(self.filename_model).mkdir(parents=True, exist_ok=True)
 
     def __train_model(self, train_loader, valid_loader, test_loader, train_size, valid_size, filename):
         for epoch in range(self.num_epoch):
             print("Epoch {}/{}".format(epoch + 1, self.num_epoch + 1))
-            epoch_train_loss = self.model_training.train(train_loader, train_size)
-            epoch_validate_loss = self.model_training.validation(valid_loader, valid_size)
+            self.model_training.train(train_loader, train_size)
+            self.model_training.validation(valid_loader, valid_size)
         print('Data train:')
         self.model_training.validation(train_loader, train_size, validation=False)
         print('Data Test:')
@@ -61,8 +61,8 @@ class Model(object):
     def get_dataset(self):
         dataset = np.loadtxt(self.filename, skiprows=1, delimiter=',', dtype=np.float64)
         dataset = self._remove_outliers(dataset)
-        dataset_x = np.asarray([l[1:] for l in dataset])
-        dataset_y = np.asarray([l[0] for l in dataset])
+        dataset_x = np.asarray([row[1:] for row in dataset])
+        dataset_y = np.asarray([row[0] for row in dataset])
         return dataset_x, dataset_y
 
     def get_normalization(self, x_train, x_test):
@@ -71,8 +71,8 @@ class Model(object):
         return x_train, x_test, standard
 
     def get_loader(self, x_train, y_train, x_test, y_test):
-        train_data = Dataset(x_train, y_train, self.model_cls.NAME_TYPE, self.model_training.model.input_layer)
-        test_data = Dataset(x_test, y_test, self.model_cls.NAME_TYPE, self.model_training.model.input_layer)
+        train_data = Dataset(x_train, y_train, self.model_cls.NAME_TYPE)
+        test_data = Dataset(x_test, y_test, self.model_cls.NAME_TYPE)
 
         data_loader = DataLoader()
         train_loader, valid_loader, train_size, valid_size = data_loader.get_train(train_data, self.batch_size)
@@ -89,8 +89,8 @@ class Model(object):
             a = np.array(filter_dataset.T[col])
             upper_quartile = np.percentile(a, 95)
             lower_quartile = np.percentile(a, 0)
-            IQR = (upper_quartile - lower_quartile) * 1.5
-            quartile_set = (lower_quartile - IQR, upper_quartile + IQR)
+            iqr = (upper_quartile - lower_quartile) * 1.5
+            quartile_set = (lower_quartile - iqr, upper_quartile + iqr)
             result_list = []
             for idx_row, y in enumerate(filter_dataset):
                 if quartile_set[0] <= y[col] <= quartile_set[1]:

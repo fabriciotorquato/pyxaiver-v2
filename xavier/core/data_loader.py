@@ -24,7 +24,7 @@ class DataLoader(object):
         valid_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler,
                                                    num_workers=num_workers, pin_memory=pin_memory)
 
-        return (train_loader, valid_loader, len(train_idx), len(valid_idx))
+        return train_loader, valid_loader, len(train_idx), len(valid_idx)
 
     def get_test(self, dataset, batch_size, shuffle=True, num_workers=2, pin_memory=False):
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,

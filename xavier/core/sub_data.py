@@ -10,7 +10,7 @@ class Subcribe:
     PORT = 5000
     NUMBER_PREDICT = 3
 
-    def __init__(self, client_id, client_secret, path_model, model_type, ip="192.168.0.15"):
+    def __init__(self, client_id, client_secret, path_model, model_type, ip=''):
         self.streams = ('pow',)
         self.ip = ip
         self.socket_stream = None
@@ -27,7 +27,7 @@ class Subcribe:
 
         self.list_predict = []
 
-        if self.ip != "":
+        if self.ip != '':
             self.socket_stream = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
     def start(self):

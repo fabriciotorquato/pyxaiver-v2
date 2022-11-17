@@ -46,7 +46,7 @@ class Dataset(object):
         total = 0
         for sample in filenames:
             if sample.rpartition('/')[0].rpartition('/')[2] != 'full':
-                total += sum(1 for row in open('{}dataset.csv'.format(sample)))
+                total += sum(1 for _ in open('{}dataset.csv'.format(sample)))
         with open('{}{}.csv'.format(save_folder + '_full/', save_folder.split('/')[-1]), 'w') as file_out:
             for sample in filenames:
                 if sample.rpartition('/')[0].rpartition('/')[2] != 'full':

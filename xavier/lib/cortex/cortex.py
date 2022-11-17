@@ -89,7 +89,7 @@ class Cortex(Dispatcher):
             if key == 'license':
                 self.license = value
             elif key == 'debit':
-                self.debit == value
+                self.debit = value
             elif key == 'headset_id':
                 self.headset_id = value
 
@@ -100,20 +100,20 @@ class Cortex(Dispatcher):
                                          on_open=self.on_open,
                                          on_error=self.on_error,
                                          on_close=self.on_close)
-        threadName = "WebsockThread:-{:%Y%m%d%H%M%S}".format(datetime.utcnow())
+        thread_name = "WebsockThread:-{:%Y%m%d%H%M%S}".format(datetime.utcnow())
         sslopt = {"cert_reqs": ssl.CERT_NONE}
-        self.websock_thread = threading.Thread(target=self.ws.run_forever, args=(None, sslopt), name=threadName)
+        self.websock_thread = threading.Thread(target=self.ws.run_forever, args=(None, sslopt), name=thread_name)
         self.websock_thread.start()
         self.websock_thread.join()
 
     def close(self):
         self.ws.close()
 
-    def set_wanted_headset(self, headsetId):
-        self.headset_id = headsetId
+    def set_wanted_headset(self, headset_id):
+        self.headset_id = headset_id
 
-    def set_wanted_profile(self, profileName):
-        self.profile_name = profileName
+    def set_wanted_profile(self, profile_name):
+        self.profile_name = profile_name
 
     def on_open(self, *args, **kwargs):
         self.do_prepare_steps()
@@ -130,7 +130,7 @@ class Cortex(Dispatcher):
 
         if req_id == HAS_ACCESS_RIGHT_ID:
             access_granted = result_dic['accessGranted']
-            if access_granted == True:
+            if access_granted:
                 self.authorize()
             else:
                 self.request_access()
@@ -233,7 +233,7 @@ class Cortex(Dispatcher):
                 print('get current profile rsp: ' + name + ", loadedByThisApp: " + str(loaded_by_this_app))
                 if name != self.profile_name:
                     warnings.warn("There is profile {} is loaded for headset {}".format(name, self.headset_id))
-                elif loaded_by_this_app == True:
+                elif loaded_by_this_app:
                     self.emit('load_unload_profile_done', isLoaded=True)
                 else:
                     self.setup_profile(self.profile_name, 'unload')
@@ -301,50 +301,32 @@ class Cortex(Dispatcher):
                 self.session_id = ''
 
     def handle_stream_data(self, result_dic):
-        if result_dic.get('com') != None:
-            com_data = {}
-            com_data['action'] = result_dic['com'][0]
-            com_data['power'] = result_dic['com'][1]
-            com_data['time'] = result_dic['time']
+        if result_dic.get('com') is not None:
+            com_data = {'action': result_dic['com'][0], 'power': result_dic['com'][1], 'time': result_dic['time']}
             self.emit('new_com_data', data=com_data)
-        elif result_dic.get('fac') != None:
-            fe_data = {}
-            fe_data['eyeAct'] = result_dic['fac'][0]  # eye action
-            fe_data['uAct'] = result_dic['fac'][1]  # upper action
-            fe_data['uPow'] = result_dic['fac'][2]  # upper action power
-            fe_data['lAct'] = result_dic['fac'][3]  # lower action
-            fe_data['lPow'] = result_dic['fac'][4]  # lower action power
-            fe_data['time'] = result_dic['time']
+        elif result_dic.get('fac') is not None:
+            fe_data = {'eyeAct': result_dic['fac'][0], 'uAct': result_dic['fac'][1], 'uPow': result_dic['fac'][2],
+                       'lAct': result_dic['fac'][3], 'lPow': result_dic['fac'][4], 'time': result_dic['time']}
             self.emit('new_fe_data', data=fe_data)
-        elif result_dic.get('eeg') != None:
-            eeg_data = {}
-            eeg_data['eeg'] = result_dic['eeg']
+        elif result_dic.get('eeg') is not None:
+            eeg_data = {'eeg': result_dic['eeg']}
             eeg_data['eeg'].pop()  # remove markers
             eeg_data['time'] = result_dic['time']
             self.emit('new_eeg_data', data=eeg_data)
-        elif result_dic.get('mot') != None:
-            mot_data = {}
-            mot_data['mot'] = result_dic['mot']
-            mot_data['time'] = result_dic['time']
+        elif result_dic.get('mot') is not None:
+            mot_data = {'mot': result_dic['mot'], 'time': result_dic['time']}
             self.emit('new_mot_data', data=mot_data)
-        elif result_dic.get('dev') != None:
-            dev_data = {}
-            dev_data['signal'] = result_dic['dev'][1]
-            dev_data['dev'] = result_dic['dev'][2]
-            dev_data['batteryPercent'] = result_dic['dev'][3]
-            dev_data['time'] = result_dic['time']
+        elif result_dic.get('dev') is not None:
+            dev_data = {'signal': result_dic['dev'][1], 'dev': result_dic['dev'][2],
+                        'batteryPercent': result_dic['dev'][3], 'time': result_dic['time']}
             self.emit('new_dev_data', data=dev_data)
-        elif result_dic.get('met') != None:
-            met_data = {}
-            met_data['met'] = result_dic['met']
-            met_data['time'] = result_dic['time']
+        elif result_dic.get('met') is not None:
+            met_data = {'met': result_dic['met'], 'time': result_dic['time']}
             self.emit('new_met_data', data=met_data)
-        elif result_dic.get('pow') != None:
-            pow_data = {}
-            pow_data['pow'] = result_dic['pow']
-            pow_data['time'] = result_dic['time']
+        elif result_dic.get('pow') is not None:
+            pow_data = {'pow': result_dic['pow'], 'time': result_dic['time']}
             self.emit('new_pow_data', data=pow_data)
-        elif result_dic.get('sys') != None:
+        elif result_dic.get('sys') is not None:
             sys_data = result_dic['sys']
             self.emit('new_sys_data', data=sys_data)
         else:
@@ -502,8 +484,7 @@ class Cortex(Dispatcher):
         self.ws.send(json.dumps(unsub_request_json))
 
     def extract_data_labels(self, stream_name, stream_cols):
-        labels = {}
-        labels['streamName'] = stream_name
+        labels = {'streamName': stream_name}
 
         data_labels = []
         if stream_name == 'eeg':
@@ -629,10 +610,10 @@ class Cortex(Dispatcher):
 
         self.ws.send(json.dumps(export_record_request))
 
-    def inject_marker_request(self, time, value, label, **kwargs):
+    def inject_marker_request(self, time_v, value, label, **kwargs):
         params_val = {"cortexToken": self.auth,
                       "session": self.session_id,
-                      "time": time,
+                      "time": time_v,
                       "value": value,
                       "label": label}
 
@@ -647,11 +628,11 @@ class Cortex(Dispatcher):
         }
         self.ws.send(json.dumps(inject_marker_request))
 
-    def update_marker_request(self, markerId, time, **kwargs):
+    def update_marker_request(self, marker_id, time_v, **kwargs):
         params_val = {"cortexToken": self.auth,
                       "session": self.session_id,
-                      "markerId": markerId,
-                      "time": time}
+                      "markerId": marker_id,
+                      "time": time_v}
 
         for key, value in kwargs.items():
             params_val.update({key: value})

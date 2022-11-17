@@ -1,3 +1,6 @@
+import matplotlib
+
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import scikitplot as skplt
@@ -8,12 +11,7 @@ from torch.autograd import Variable
 from xavier.constants.type import Type
 from xavier.net.chrononet import ChronoNet
 from xavier.net.cnn import Cnn
-from xavier.net.eggnet import EEGNet
-from xavier.net.mlp import Mlp
 from xavier.net.rnn import Rnn
-
-# Turn interactive plotting off
-plt.ioff()
 
 
 class Training:
@@ -30,14 +28,10 @@ class Training:
     def load_model(self, model_type, path_model):
         self.model_type = model_type
 
-        if self.model_type == Type.mlp:
-            self.model = Mlp()
-        elif self.model_type == Type.rnn:
+        if self.model_type == Type.rnn:
             self.model = Rnn()
         elif self.model_type == Type.cnn:
             self.model = Cnn()
-        elif self.model_type == Type.eegnet:
-            self.model = EEGNet()
         elif self.model_type == Type.chrononet:
             self.model = ChronoNet()
 

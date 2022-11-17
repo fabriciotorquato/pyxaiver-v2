@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -32,24 +30,21 @@ class ChronoNet(nn.Module):
     def __init__(self, device=None):
         super(ChronoNet, self).__init__()
         self.device = device
-        self.input_layer = 64
-        self.matriz_size = int(math.sqrt(self.input_layer))
         self.output_layer = 3
         self.inception1 = Inception(5)
         self.inception2 = Inception(96)
-        self.inception3 = Inception(96)
+
         self.gru1 = nn.GRU(96, 32, num_layers=1, batch_first=True)
-        self.affine1 = nn.Linear(2, 1)
+
         self.gru2 = nn.GRU(32, 32, batch_first=True)
         self.gru3 = nn.GRU(64, 32, batch_first=True)
-        self.gru4 = nn.GRU(96, 2, batch_first=True)
-        self.classifier = nn.Linear(192, self.output_layer, bias=True)
+        
+        self.classifier = nn.Linear(96 * 2, self.output_layer, bias=True)
 
     def forward(self, x):
         x = x.contiguous().view(-1, 5, 5)
         x = self.inception1(x)
         x = self.inception2(x)
-        # x = self.inception3(x)
         x = x.contiguous().view(-1, 2, 96)
         x, _ = self.gru1(x)
         x_res = x
@@ -59,12 +54,7 @@ class ChronoNet(nn.Module):
         x, _ = self.gru3(x_cat1)
         x = torch.cat([x_res, x_res2, x], dim=2)
         x = x.contiguous().view(-1, 96, 2)
-        # x = F.elu(self.affine1(x))
-        # x = x.contiguous().view(64, 1, 96)
-        # x, _ = self.gru4(x)
-        # x = torch.squeeze(x, dim=1)
-
-        x = x.view(-1, 192)
+        x = x.view(-1, 96 * 2)
         x = self.classifier(x)
         return x
 
