@@ -27,8 +27,8 @@ if __name__ == "__main__":
             values = '{}values.csv'.format(file)
             random = '{}data_random.txt'.format(file)
             classification = '{}classification.txt'.format(file)
-            dataList = '{}dataList.csv'.format(file)
-            dataset = Dataset(values, classification, random, dataList, file)
+            image_list = '{}dataList.csv'.format(file)
+            dataset = Dataset(values, classification, random, image_list, file)
 
     if dataset is not None:
         dataset.merge_files(path, filenames)

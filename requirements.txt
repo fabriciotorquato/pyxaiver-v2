@@ -12,3 +12,4 @@ tqdm==4.64.0
 python-dispatch==0.2.0
 pyqt5==5.15.7
 python-dotenv==0.21.0
+sympy==1.11.1

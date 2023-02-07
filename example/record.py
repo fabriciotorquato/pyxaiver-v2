@@ -8,9 +8,6 @@ from xavier.core.record import Record
 load_dotenv()
 
 
-# load_dotenv('/home/miguel/my_project/.env')
-
-
 def get_args():
     parser = ArgumentParser(description='Xavier')
     parser.add_argument('--path', type=str, default='')

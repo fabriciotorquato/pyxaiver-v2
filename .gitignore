@@ -10,4 +10,5 @@ venv/*
 
 models/
 dataset/
+metrics/
 .env

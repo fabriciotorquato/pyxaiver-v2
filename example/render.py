@@ -9,13 +9,12 @@ from xavier.core.sub_data import Subcribe
 load_dotenv()
 
 
-# load_dotenv('/home/miguel/my_project/.env')
-
-
 def get_args():
     parser = ArgumentParser(description='Xavier')
     parser.add_argument('--model', type=str, default='')
     parser.add_argument('--type_nn', type=str, default='')
+    parser.add_argument('--path', type=str, default='')
+    parser.add_argument('--username', type=str, default='user_x')
     args = parser.parse_args()
     return args
 
@@ -25,6 +24,9 @@ if __name__ == "__main__":
 
     model = args.model
     model_type = args.type_nn
+
+    path = args.path
+    username = args.username
 
     if model_type == "rnn":
         model_type = Type.rnn
@@ -36,7 +38,7 @@ if __name__ == "__main__":
     your_app_client_id = os.environ.get('EMOTIV_APP_CLIENT_ID', '')
     your_app_client_secret = os.environ.get('EMOTIV_APP_CLIENT_SECRET', '')
     ip = os.environ.get('MACHINE_IP', '')
-    subcribe = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, ip)
+    subcribe = Subcribe(your_app_client_id, your_app_client_secret, model, model_type, ip, path, username)
 
     try:
         subcribe.start()

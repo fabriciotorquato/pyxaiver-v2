@@ -34,7 +34,7 @@ class Classification(object):
             data_csv = csv.reader(file_csv)
             next(data_csv, None)
             next(data_csv, None)
-            data_csv = np.asarray([np.array(row[2:]).astype(np.float64) for row in data_csv])
+            data_csv = np.asarray([np.array(row[1:]).astype(np.float64) for row in data_csv])
         return data_csv
 
     def get_csv(self, path):
