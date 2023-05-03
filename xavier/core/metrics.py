@@ -1,8 +1,11 @@
 import csv
 from datetime import datetime
+from os import listdir
+from os.path import isfile, join
 
 import matplotlib.pyplot as plt
 
+from xavier.constants import eeg
 from xavier.core.optimise_itr import calcule_itr
 
 
@@ -32,23 +35,29 @@ class Metrics(object):
         self.metrics_file = f'{save_file}/metrics.csv'
         self.save_file = save_file
 
-        self.header_file = ['DET', 'TMD (s)', 'TA (%)', 'TMA (s)', 'ITR (bits/min)', 'FPF (%)', 'FPD (%)', 'FPE (%)', ]
+        self.header_file = ['NCC', 'TA (%)', 'DET', 'TMD (s)', 'TMA (s)', 'ITR (bits/min)']
 
         self._create_metrics()
 
     def _create_metrics(self):
-        ta, det, tma, tmd, fp_0, fp_1_, fp_2 = self._detection_precision()
+        ncc, tdc, det, tma, tmd = self._detection_precision()
+        ta = self._find_ta()
         itr = self._itr(ta, tmd)
-        self._save_csv_results(det, tmd, round(ta * 100, 2), tma, itr, fp_0, fp_2, fp_1_)
+        self._save_csv_results(ncc, ta * 100, det, tmd, tma, itr)
+
+    def _find_ta(self):
+        path_model = self.save_file.replace('/metrics/', '/models/')
+        model_filename = [f for f in listdir(path_model) if isfile(join(path_model, f)) and '.pkl' in f][0]
+        return float(model_filename.replace(f'{eeg.VERSION} ', '').replace('.pkl', ''))
 
     def _itr(self, ta, tmd):
         targets = len(self.legends)
-        print(calcule_itr(3, 1.0, 1.25))
         return round(calcule_itr(targets, ta, tmd), 2)
 
     def _detection_precision(self):
         det = 0
         ncc = 0
+        nt = 0
 
         tmd = []
         tma = []
@@ -73,9 +82,10 @@ class Metrics(object):
                     break
 
                 if begin_time is None:
-                    if time_predict >= begin:
+                    if time_predict > begin:
                         begin_time = begin
                         old_time_predict = time_predict
+                        nt += 1
 
                 if begin_time is not None:
                     det += 1
@@ -97,21 +107,18 @@ class Metrics(object):
         plt.ylabel('Acertos')
         plt.savefig(f'{self.save_file}/histogram_detection_time.png')
 
-        print(ncc, det)
         return (
-            round((ncc / det), 3),
+            ncc,
+            round((ncc / nt) * 100, 1),
             det,
             round(sum(tma) / len(tma), 3),
             round(sum(tmd) / len(tmd), 3),
-            round((fp['0'] / det) * 100, 1),
-            round((fp['1'] / det) * 100, 1),
-            round((fp['2'] / det) * 100, 1)
         )
 
-    def _save_csv_results(self, det, tmd, ta, tma, itr, fp_0, fp_2, fp_1_):
+    def _save_csv_results(self, ncc, tdc, det, tmd, tma, itr):
         with open(self.metrics_file, 'w') as file:
             writer = csv.writer(file)
             writer.writerow(self.header_file)
             writer.writerow(
-                (det, tmd, ta, tma, itr, fp_0, fp_2, fp_1_)
+                (ncc, tdc, det, tmd, tma, itr)
             )

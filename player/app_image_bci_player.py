@@ -297,7 +297,7 @@ class App(QWidget):
 
     def wait_time(self):
         self.count_interval += 1
-        print(self.next_step)
+        # print(self.next_step)
         if self.next_step or self.count_interval == self.timer_show_classification * 10:
             self.next_step = False
             self.image_classification.append(f"{datetime.now()}\n")

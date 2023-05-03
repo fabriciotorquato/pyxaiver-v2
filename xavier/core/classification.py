@@ -34,7 +34,7 @@ class Classification(object):
             data_csv = csv.reader(file_csv)
             next(data_csv, None)
             next(data_csv, None)
-            data_csv = np.asarray([np.array(row[1:]).astype(np.float64) for row in data_csv])
+            data_csv = np.asarray([np.array(row[2:]).astype(np.float64) for row in data_csv])
         return data_csv
 
     def get_csv(self, path):
@@ -48,10 +48,10 @@ class Classification(object):
         for idx, timestamps in enumerate(self.timestamps):
             feature.append([])
             begin_time = timestamps[0].strip()
-            begin_time = int(time.mktime(datetime.strptime(begin_time, "%Y-%m-%d %H:%M:%S").timetuple()))
+            begin_time = int(time.mktime(datetime.strptime(begin_time, "%Y-%m-%d %H:%M:%S.%f").timetuple()))
 
             end_time = timestamps[1].strip()
-            end_time = int(time.mktime(datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S").timetuple()))
+            end_time = int(time.mktime(datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S.%f").timetuple()))
 
             for index_raw_data, value in enumerate(self.time_raw_data):
                 if begin_time <= value <= end_time:
