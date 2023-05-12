@@ -1,0 +1,102 @@
+#1
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_1"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_1" --times_image=1 --wait_time=5 --classification_time=50
+
+#2
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_2"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_2" --times_image=1 --wait_time=5 --classification_time=50
+
+#3
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_3"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_3" --times_image=1 --wait_time=5 --classification_time=50
+
+#4
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_4"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_4" --times_image=1 --wait_time=5 --classification_time=50
+
+#5
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_5"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_5" --times_image=1 --wait_time=5 --classification_time=50
+
+#6
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_6"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_6" --times_image=1 --wait_time=5 --classification_time=50
+
+#7
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_7"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_7" --times_image=1 --wait_time=5 --classification_time=50
+
+#8
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_8"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_8" --times_image=1 --wait_time=5 --classification_time=50
+
+#9
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_9"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_9" --times_image=1 --wait_time=5 --classification_time=50
+
+#10
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_10"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_10" --times_image=1 --wait_time=5 --classification_time=50
+
+#11
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_11"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_11" --times_image=1 --wait_time=5 --classification_time=50
+
+#12
+python -m example.record --path="{script_path}/dataset/{user_name}" --username="user_12"
+python -m example.image_player --path="{script_path}/dataset/{user_name}" --username="user_12" --times_image=1 --wait_time=5 --classification_time=50
+
+
+python -m example.create_dataset --path="{script_path}/dataset/{user_name}"
+
+./scripts/send_dataset.sh {user_name}_full
+
+./scripts/remote_training_model.sh {user_name}_full {user_name}.csv
+
+./scripts/get_model.sh {user_name}
+
+# Run Metrics of Model
+
+## Raspberry
+
+cd ~/ros/catkin_ws
+./run_rasp.sh
+
+## ROS Machine, first terminal
+
+cd ~/ros/catkin_ws
+./run_1_ros.sh
+
+# typing 'i' for start
+# typing 'p' for stop
+
+## ROS Machine, second terminal
+
+cd ~/ros/catkin_ws
+./run_2_ros.sh
+
+## Main Machine
+
+### Test model
+python -m example.render --model="{script_path}/models/{user_name}/chrononet/V13 0.xx.pkl" --type_nn="chrononet" --path="{script_path}/metrics/{user_name}" --username="chrononet"
+
+python -m example.render --model="{script_path}/models/{user_name}/rnn/V13 0.xx.pkl" --type_nn="rnn" --path="{script_path}/metrics/{user_name}" --username="rnn"
+
+python -m example.render --model="{script_path}/models/{user_name}/cnn/V13 0.xx.pkl" --type_nn="cnn" --path="{script_path}/metrics/{user_name}" --username="cnn"
+
+
+### Run metrics
+
+python -m example.image_player --path="{script_path}/metrics/{user_name}" --username="chrononet" --times_image=20 --wait_time=1 --classification_time=5
+
+python -m example.image_player --path="{script_path}/metrics/{user_name}" --username="rnn" --times_image=20 --wait_time=1 --classification_time=5
+
+python -m example.image_player --path="{script_path}/metrics/{user_name}" --username="cnn" --times_image=20 --wait_time=1 --classification_time=5
+
+### Evaluate
+
+python -m example.metrics --path="{script_path}/metrics/{user_name}/rnn"
+
+python -m example.metrics --path="{script_path}/metrics/{user_name}/cnn"
+
+python -m example.metrics --path="{script_path}/metrics/{user_name}/chrononet"

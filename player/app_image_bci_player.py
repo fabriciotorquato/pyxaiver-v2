@@ -50,7 +50,7 @@ class App(QWidget):
         self.play_media = False
 
         self.times_image = times_image
-        self.timer_play = wait_time  # Time for start the firts image
+        self.timer_play = wait_time  # Time for start the firsts image
         self.timer_open_eyes = wait_time  # Time of black screen
         self.timer_start_button = wait_time  # Time of image in white screen
         self.timer_show_classification = classification_time  # Time of image classification
@@ -95,17 +95,18 @@ class App(QWidget):
             while True:
                 if self.quit_app:
                     return
-                with open(self.predict_path, 'r') as file:
-                    read_len = len(file.readlines())
-                    file.seek(0)
+                if self.image_number > 0:
+                    with open(self.predict_path, 'r') as file:
+                        read_len = len(file.readlines())
+                        file.seek(0)
+                        if old_len < read_len:
+                            value = file.readlines()[-1]
                     if old_len < read_len:
-                        value = file.readlines()[-1]
-                if old_len < read_len:
-                    self.predict_value = int(value.split(',')[0].strip())
-                    self.real_value = self.data_list_file[self.files[self.image_number - 1]]
-                    if self.is_green_screen and self.predict_value == self.real_value:
-                        self.next_step = True
-                    old_len = read_len
+                        self.predict_value = int(value.split(',')[0].strip())
+                        self.real_value = self.data_list_file[self.files[self.image_number - 1]]
+                        if self.is_green_screen and self.predict_value == self.real_value:
+                            self.next_step = True
+                        old_len = read_len
                 sleep(.25)
         except Exception as ex:
             print(ex)
@@ -292,18 +293,17 @@ class App(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.wait_time)
         self.timer.setInterval(100)
-        # self.timer.start(self.timer_show_classification * 1000)
         self.timer.start(100)
 
     def wait_time(self):
         self.count_interval += 1
-        # print(self.next_step)
         if self.next_step or self.count_interval == self.timer_show_classification * 10:
             self.next_step = False
             self.image_classification.append(f"{datetime.now()}\n")
             self.next_image()
 
     def show_black_view(self):
+        QSound.play(os.getcwd() + "/player/public/openEyes-FX.wav")
         pixmap = QPixmap(os.getcwd() + "/player/public/None.png")
         self.label.setScaledContents(True)
         pixmap = pixmap.scaled(int(self.frameGeometry().width()), int(
@@ -312,7 +312,6 @@ class App(QWidget):
         self.label.setPixmap(pixmap)
 
     def show_classification_color(self):
-
         pixmap = QPixmap(self.files[self.image_number - 1])
         pixmap = pixmap.scaled(int(self.frameGeometry().width()),
                                int(self.frameGeometry().height() * 0.85) * 0.98,
@@ -338,8 +337,6 @@ class App(QWidget):
         self.label.setAlignment(Qt.AlignCenter)
 
     def hidden_classification_color(self):
-
-        QSound.play(os.getcwd() + "/player/public/openEyes-FX.wav")
         self.label.setScaledContents(False)
         self.label.setAlignment(Qt.AlignCenter)
 
