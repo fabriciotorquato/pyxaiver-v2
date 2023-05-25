@@ -3,7 +3,7 @@ import random
 import shutil
 import sys
 import threading
-from datetime import datetime
+import datetime
 from os import listdir
 from time import sleep
 
@@ -86,6 +86,7 @@ class App(QWidget):
         self.process_thread = threading.Thread(target=self.run_communication, args=())
         self.predict_value = None
         self.real_value = None
+        self.begin_timer = None
         self.is_green_screen = False
         self.next_step = False
 
@@ -243,6 +244,7 @@ class App(QWidget):
         self.timer.start(self.timer_play * 1000)
 
     def stop(self):
+        QSound.play(os.getcwd() + "/player/public/openEyes-FX.wav")
         self.quit_app = True
         self.stop_timer(self.open_eyes)
         self.stop_timer(self.timer)
@@ -289,17 +291,16 @@ class App(QWidget):
 
         self.show_classification_color()
 
-        self.count_interval = 0
+        self.begin_timer = datetime.datetime.now()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.wait_time)
         self.timer.setInterval(100)
         self.timer.start(100)
 
     def wait_time(self):
-        self.count_interval += 1
-        if self.next_step or self.count_interval == self.timer_show_classification * 10:
+        if self.next_step or self.begin_timer + datetime.timedelta(0, self.timer_show_classification) <= datetime.datetime.now():
             self.next_step = False
-            self.image_classification.append(f"{datetime.now()}\n")
+            self.image_classification.append(f"{datetime.datetime.now()}\n")
             self.next_image()
 
     def show_black_view(self):
@@ -331,7 +332,7 @@ class App(QWidget):
         painter.end()
         self.label.setPixmap(pixmap2)
 
-        self.image_classification.append(f"{datetime.now()}\n")
+        self.image_classification.append(f"{datetime.datetime.now()}\n")
 
         self.label.setScaledContents(False)
         self.label.setAlignment(Qt.AlignCenter)
